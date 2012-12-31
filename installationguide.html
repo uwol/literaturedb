@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/xhtml; charset=UTF-8" />
+    <title>literaturedb installation</title>
+    <meta http-equiv="content-language"	 content="de" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    
+    <style type="text/css">
+body {
+	text-align: justify; 
+	margin-left: auto; 
+	margin-right: auto; 
+	width: 70%;
+	font-family:arial,helvetica,sans-serif; }
+h1 {color: #FF6600; }
+h2, h3 {color: #FF9900; }
+a {color: #FF9900; }
+li {margin-bottom: 1em}
+	</style>  
+  </head>
+
+<body>
+<h1>literaturedb installation</h1>
+
+<h2>Introduction</h2>
+
+
+<p>The installation of literaturedb takes four simple steps and just a few minutes. If you want to update an existing installation of literaturedb, please take a look <a href="#update">here</a>. Requirements for installation are:</p>
+<ul>
+	<li>PHP 5.0 or higher</li>
+	<li>MySQL 4.1 or higher</li>
+	<li>PHP needs read and write access to the folder "custom/documents". This is not a problem in most PHP configurations.</li>
+	<li>UTF8 has to be enabled in PHP and MySQL for supporting special characters</li>
+</ul>
+
+
+<h2>Installation</h2>
+<p>In the following the URL http://literaturedb.example.org is used as an example. Please replace it with the URL of your web site you are installing literaturedb on.</p>
+
+
+<ol>
+
+<li><b>Configure:</b> The file custom/systemconfig.php is the central configuration file. It can be edited e.g. with Wordpad or Notepad++. Please enter the connection settings for the MySQL server under $mysqlServer, $mysqlUser, $mysqlPass and $mysqlDb. Normally you can find this information in the configuration menu of your web hoster. Additionally the name of the system, email address of the primary web master (you?), domain name of your literaturedb web site, site URI and admins have to be set.</li>
+
+<li><b>Upload:</b> Upload all files and folders to the root folder of the web hosting in BINARY mode, so that it can be reached as e.g. http://literaturedb.example.org/index.php.</li>
+
+<li><b>Create tables:</b> Start install.php by opening e.g. the web page http://literaturedb.example.org/install.php in your browser. All tables should be created in the database properly. Afterwards delete the file install.php.</li>
+
+<li><b>Register an admin account:</b> Open the site (e.g. http://literaturedb.example.org) in your browser and register a new user. After registering check that the username of the user you just created is also contained in custom/systemconfig.php in the $admins list so that the new user is an administrator. The admin user account is activated automatically. Also a registration notification should have been sent to your email address.</li>
+</ol>
+
+<h2>Use</h2>
+<p>Now all configuration steps are done! Log into the system with the new user account you just registered and upload some documents. Invite some colleagues for registration, activate their accounts on the admin page and share documents with them.</p>
+
+<p>And please don't forget to make backups of the files and database on a regular basis!</p>
+
+<h2><a name="update">Update</a></h2>
+For updating just overwrite all installed files and folders (index.php, lib, pages, ...) with files from the updated package EXCEPT the folder <i>custom</i>. DO NOT overwrite the folder <i>custom</i>, because all your document files are placed in there! Then optionally you can check if the new systemconfig.php contains new configuration options and copy those options into your old systemconfig.php in the folder custom.
+</body>
+</html>
