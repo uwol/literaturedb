@@ -131,6 +131,9 @@ class LibDocument{
 	}
 	
 	static function fetchByHash($hash, $userId){
+		if($hash == '')
+			return;
+	
 		$cmd = sprintf('SELECT literaturedb_document.id, literaturedb_document.hash, literaturedb_document.entrytype_id, literaturedb_document.title, literaturedb_document.date, literaturedb_document.abstract, literaturedb_document.address, literaturedb_document.booktitle, literaturedb_document.chapter, literaturedb_document.doi, literaturedb_document.ean, literaturedb_document.edition, literaturedb_document.institution, literaturedb_document.journal_id, literaturedb_document.number, literaturedb_document.organization, literaturedb_document.pages, literaturedb_document.publisher_id, literaturedb_document.school, literaturedb_document.series, literaturedb_document.url, literaturedb_document.volume, literaturedb_document.note, literaturedb_document.rating, literaturedb_document.filename, literaturedb_document.extension, literaturedb_document.filesize, literaturedb_document.datetime_upload, literaturedb_document.user_id, literaturedb_publisher.name AS publisher_name, literaturedb_journal.name AS journal_name FROM literaturedb_document LEFT JOIN literaturedb_publisher ON literaturedb_publisher.id = literaturedb_document.publisher_id LEFT JOIN literaturedb_journal ON literaturedb_journal.id = literaturedb_document.journal_id WHERE literaturedb_document.hash = %s AND literaturedb_document.user_id = %s',
 			LibDb::secInp($hash),
 			LibDb::secInp($userId));
@@ -201,8 +204,8 @@ class LibDocument{
 		foreach(self::$fields as $field)
 			if(!isset($document[$field]))
 				$document[$field] = '';
-		
-		
+
+
 		$document['rating'] = min(5, $document['rating']);
 		
 		/*
@@ -242,7 +245,7 @@ class LibDocument{
 				LibDb::secInp($document['user_id']));
 			$document['publisher_id'] = LibDb::queryAttribute($cmd);
 		}
-		
+
 		/*
 		* Document
 		*/
@@ -281,8 +284,6 @@ class LibDocument{
 			$id = $document['id'];
 		}
 		else{
-			if(trim($document['hash']) == '' || trim($document['filename']) == '' || trim($document['filesize']) == 0)
-				return false;
 			$cmd = sprintf('INSERT IGNORE INTO literaturedb_document (hash, entrytype_id, title, date, abstract, address, booktitle, chapter, doi, ean, edition, institution, journal_id, number, organization, pages, publisher_id, school, series, url, volume, note, rating, filename, extension, filesize, datetime_upload, user_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), %s)',
 				LibDb::secInp(trim($document['hash'])),
 				LibDb::secInp(LibDb::zerofy(trim($document['entrytype_id']))),

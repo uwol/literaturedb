@@ -48,7 +48,6 @@ $(function (){
 <?php
 $documentAddress = '';
 if(isset($_REQUEST['documentAddress']))
-
 	$documentAddress = LibDocument::buildCanonicalDocumentAddress($_REQUEST['documentAddress']);
 
 $mode = '';
@@ -58,28 +57,31 @@ if(isset($_REQUEST['mode']))
 
 
 /*
-
 * Actions
-
 */
-//adding a file
 
-if((isset($_POST['action']) && $_POST['action'] == "file_upload" && $_FILES['file']['tmp_name']) || (isset($_GET['action']) && $_GET['action'] == "file_copy")){
+//adding a file
+if((isset($_REQUEST['action']) && $_REQUEST['action'] == 'document_create') || (isset($_GET['action']) && $_GET['action'] == 'document_copy')){
 	$documentAddress = '';
 	if(isset($_GET['documentAddress']))
-
 		$documentAddress = trim($_GET['documentAddress']);
 	
 	$hash = '';
 
+	/*
+	* copy file contents
+	*/
 	if(isset($_FILES['file']['tmp_name']) && $_FILES['file']['tmp_name'] != ''){ //file upload?
 		$hash = sha1_file($_FILES['file']['tmp_name']);
-		if($hash != '' && !is_file(LibDocument::getFilePath($hash))){ //file does not exist yet?
+		if($hash == ''){
+			LibGlobal::$errorTexts[] = 'The hash value is empty although a file has been uploaded.';
+		}
+		elseif(!is_file(LibDocument::getFilePath($hash))){ //file does not exist yet?
 			copy($_FILES['file']['tmp_name'], LibDocument::getFilePath($hash)); //copy the file
 			LibGlobal::$notificationTexts[] = 'The document has been uploaded.';
 		}
 	}
-	elseif($documentAddress != ''){ //file copy
+	elseif($documentAddress != ''){ // copy of already existing file
 		if(LibDocument::isLocalDocumentAddress($documentAddress)){ //local file?
 			$document = LibRouter::document_fetch($documentAddress, $sessionUser->getUserAddress());
 			$hash = $document['hash'];
@@ -96,31 +98,35 @@ if((isset($_POST['action']) && $_POST['action'] == "file_upload" && $_FILES['fil
 		}
 	}
 
-
-	if($hash == '')
-		LibGlobal::$errorTexts[] = 'The hash value is empty although a file has been uploaded.';
-
 	/*
 	* generate file meta information
 	*/
-	//take a look, if the user already owns the file
+	
+	//check, whether the user already owns the file
 	$document = LibRouter::document_fetchByHash($hash, $sessionUser->getUserAddress(), $sessionUser->getUserAddress());
-	if((!is_array($document) || !isset($document['id']) || $document['id'] == '') && $documentAddress != ''){ //no file found and a copied file?
+
+	//no file found and a copied file?
+	if($documentAddress != '' && (!is_array($document) || !isset($document['id']) || $document['id'] == '')){
 		//try to fetch information from the original owner the file was copied from
 		$document = LibRouter::document_fetch($documentAddress, $sessionUser->getUserAddress());
 	}
 
-	if(!isset($document['id']) || $document['id'] == ''){ //could no meta information be found for the file?
-		if($hash != ''){ 
-			//-> upload case, generate new document with information
-			$path_parts = pathinfo($_FILES['file']['name']);
-			$document = array();
+	//could no meta information be found for the file?
+	if(!is_array($document) || !isset($document['id']) || $document['id'] == ''){
+		$document = array();
+
+		if($hash != ''){
 			$document['hash'] = $hash;
+			$document['filesize'] = filesize(LibDocument::getFilePath($hash));
+		}
+
+		if(isset($_FILES['file']['name']) && $_FILES['file']['name'] != ''){
+			$path_parts = pathinfo($_FILES['file']['name']);
+			
 			$document['title'] = $path_parts['filename'];
 			$document['filename'] = $path_parts['filename'];
-			$document['extension'] = $path_parts['extension'];
-			$document['filesize'] = filesize(LibDocument::getFilePath($hash));
-		}		
+			$document['extension'] = $path_parts['extension'];	
+		}
 	}
 
 	/*
@@ -156,10 +162,9 @@ if((isset($_POST['action']) && $_POST['action'] == "file_upload" && $_FILES['fil
 	}
 
 	//save the document
-
 	$documentAddress = LibDocument::buildCanonicalDocumentAddress(LibRouter::document_save($document, $sessionUser->getUserAddress()));
+	
 	$mode = 'edit';
-
 }
 
 
@@ -190,12 +195,9 @@ if(isset($_POST['action']) && $_POST['action'] == "document_save"){
 	$document['note'] = $_POST['note'];
 	$document['rating'] = $_POST['rating'];
 
-	
-
 	$document['tags'] = LibString::parseTagString($_POST['tags'], $sessionUser->id);
 	$document['authors'] = LibString::parsePersonNameString($_POST['authors'], $sessionUser->id);
 	$document['editors'] = LibString::parsePersonNameString($_POST['editors'], $sessionUser->id);
-
 
 	$document['user_id'] = $sessionUser->id;
 
@@ -203,18 +205,13 @@ if(isset($_POST['action']) && $_POST['action'] == "document_save"){
 	$documentAddress = LibDocument::buildCanonicalDocumentAddress(LibRouter::document_save($document, $sessionUser->getUserAddress()));
 	
 	LibGlobal::$notificationTexts[] = 'The document has been saved.';
-
 }
 
 
 
 
-
-
 /*
-
 * Output
-
 */
 echo LibString::getNotificationBoxText();
 echo LibString::getErrorBoxText();
@@ -256,7 +253,7 @@ if(LibDocument::isValidDocumentAddress($documentAddress)){
 			if($ownDocument)
 				echo '<a href="index.php?pid=literaturedb_document&amp;mode=edit&amp;documentAddress=' .LibString::protectXSS($documentAddress). '"><img src="img/icons/page_white_edit.png" alt="edit"/></a> ';
 			else
-				echo '<a href="index.php?pid=literaturedb_document&amp;action=file_copy&amp;documentAddress=' .LibString::protectXSS($documentAddress). '"><img src="img/icons/page_copy.png" alt="copy"/></a> ';
+				echo '<a href="index.php?pid=literaturedb_document&amp;action=document_copy&amp;documentAddress=' .LibString::protectXSS($documentAddress). '"><img src="img/icons/page_copy.png" alt="copy"/></a> ';
 			
 			if($ownDocument)
 				echo '<a href="index.php?pid=literaturedb_documents&amp;mode=delete&amp;documentId=' .LibString::protectXSS($document['id']). '" onclick="return confirm(\'Are you sure you want to delete this document?\')"><img src="img/icons/cross.png" alt="delete"/></a> ';
@@ -275,7 +272,7 @@ if(LibDocument::isValidDocumentAddress($documentAddress)){
 			echo '<tr><td>Tags:</td><td>' .LibDocument::buildTagsString($document). '</td></tr>';
 
 			/*
-			* Stuff
+			* bibtex meta data
 			*/
 			echo '<tr><td colspan="2"><hr /></td></tr>';
 
@@ -404,7 +401,7 @@ if(LibDocument::isValidDocumentAddress($documentAddress)){
 
 
 			/*
-			* stuff
+			* bibtex meta data
 			*/
 			echo '<hr />';
 			
@@ -454,32 +451,22 @@ if(LibDocument::isValidDocumentAddress($documentAddress)){
 }
 
 else{
-
-	echo '<h1>Add document</h1>';
+	echo '<h1>Add a document</h1>';
 
 	echo '<form method="post" enctype="multipart/form-data" action="index.php?pid=literaturedb_document">';
 	echo '<fieldset>';
 
-	echo '<input type="hidden" name="action" value="file_upload" />';
-	echo '<p>File path: <input name="file" type="file" size="30" /></p>';
-
+	echo '<p><input type="submit" value="Add a document" /></p>';
 
 	$memoryLimit = (int) substr(ini_get("memory_limit"),0,-1);
-	$maxSize = $memoryLimit / 6; //rein rempirisch, keine Ahnung warum !!!
-	
-	echo 'Max ca. ' .round($maxSize, 0). ' MB<br />';
-	
+	$maxSize = $memoryLimit / 6;
 
-	echo '<br /><input type="submit" value="Upload" />';
+	echo '<p>Optional file (max. ' .round($maxSize, 0). ' MB): <input name="file" type="file" size="30" /></p>';
+	
+	echo '<input type="hidden" name="action" value="document_create" />';
+
 	echo '</fieldset>';
-
 	echo '</form>';
-	
-	echo '<br />';
-	echo '<h2>No file available?</h2>';
-	echo '<p>literaturedb is file-driven: for every document the corresponding text has to be uploaded as a file (pdf, txt, doc, etc.). This enforces that all documents stored in the system are available with their full text.</p>';
-	echo '<p>If you cannot find a file of the document please upload a small picture of e.g. the book cover.</p>';
-
 }
 
 ?>

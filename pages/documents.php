@@ -95,7 +95,7 @@ if($searchString != ''){ //searched documents
 			if($document['title'] != '')
 				echo LibString::protectXSS(LibString::truncate($document['title'], 50, ' ...'));
 			else
-				echo 'misssing title';
+				echo 'missing title';
 			echo '</a><br />';
 			echo '<div class="authors">' . LibDocument::buildAuthorsString($document) . '</div>';
 			echo '<div class="tags">' . LibDocument::buildTagsString($document) . '</div>';
@@ -168,7 +168,7 @@ elseif($_GET['tag'] == '!notag'){ //documents without a tag
 			if($document['title'] != '')
 				echo LibString::protectXSS(LibString::truncate($document['title'], 50, ' ...'));
 			else
-				echo 'misssing title';
+				echo 'missing title';
 			echo '</a><br />';
 			echo '<div class="authors">' . LibDocument::buildAuthorsString($document) . '</div>';
 			echo '</td>';
@@ -198,7 +198,7 @@ else{ //tagged documents
 			if($document['title'] != '')
 				echo LibString::protectXSS(LibString::truncate($document['title'], 50, ' ...'));
 			else
-				echo 'misssing title';
+				echo 'missing title';
 			echo '</a><br />';
 			echo '<div class="authors">' . LibDocument::buildAuthorsString($document) . '</div>';
 			echo '<div class="tags">' . LibDocument::buildTagsString($document) . '</div>';

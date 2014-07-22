@@ -261,7 +261,7 @@ class LibRouter{
 		if(is_array($document)){ //could the document be fetched successfully?
 			if(LibDocument::isLocalDocumentAddress($askedDocumentAddress)){	
 				if(self::document_mayFetchFileContents($askedDocumentAddress, $askingUserAddress)){
-					if($document['hash'] != ""){
+					if($document['hash'] != ''){
 						$filePath = LibDocument::getFilePath($document['hash']);
 						//$filename = $document['filename'] . '.' . $document['extension'];
 						//readfile($filePath);
@@ -292,14 +292,12 @@ class LibRouter{
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
 		$askedUserAddress = LibUser::buildCanonicalUserAddress($askedUserAddress);
 		if(self::document_mayFetchByHash($askedUserAddress, $askingUserAddress)){
-
 			$askedUser = LibUser::fetchByUserAddress($askedUserAddress);
 			return LibDocument::fetchByHash($hash, $askedUser['id']);
 		}
 	}
 	
 	static function document_mayFetchByHash($askedUserAddress, $askingUserAddress){
-
 		return self::mayProcessRequest($askedUserAddress, $askingUserAddress);
 	}
 
@@ -309,7 +307,7 @@ class LibRouter{
 
 		if(self::document_maySave($document, $askingUserAddress)) //may save this document?
 			return LibDocument::save($document);
-		else{ //may not save this document under this id. Solutaion: copy document
+		else{ //may not save this document under this id. Solution: copy document
 			$documentInDb = LibDocument::fetch($document['id']);
 			$documentByHash = self::document_fetchByHash($documentInDb['hash'], $askingUserAddress, $askingUserAddress);
 			if(isset($documentByHash['hash']) && $documentByHash['hash'] != '') //is document with this hash already owned by user?
@@ -321,8 +319,7 @@ class LibRouter{
 				$document['extension'] = $documentInDb['extension'];
 				$document['filesize'] = $documentInDb['filesize'];
 				$document['datetime_upload'] = date('Y-m-d h:i:s');
-				if($document['hash'] != '')
-					return LibDocument::save($document);
+				return LibDocument::save($document);
 			}
 		}
 	}

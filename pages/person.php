@@ -89,12 +89,9 @@ if(is_array($person) && isset($person['id']) && is_numeric($person['id'])){
 				echo '<td style="padding-bottom:5px" ' .getAlienStringClass(isOwnDocument($document)). '><a href="index.php?pid=literaturedb_document&amp;documentAddress=' .LibString::protectXSS(LibDocument::buildMinimalDocumentAddress($document['document_address'])). '">';
 
 				if($document['title'] != '')
-
 					echo LibString::protectXSS(LibString::truncate($document['title'], 50, ' ...'));
-
 				else
-
-					echo 'misssing title';
+					echo 'missing title';
 
 				echo '</a><br />';
 				echo '<div class="authors">' . LibDocument::buildAuthorsString($document) . '</div>';

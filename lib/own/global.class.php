@@ -17,7 +17,7 @@ along with literaturedb. If not, see <http://www.gnu.org/licenses/>.
 */
 
 class LibGlobal{
-	public static $version = "1.20";
+	public static $version = "1.30";
 	public static $selectedUserAddresses = array();
 	public static $numberOfMysqlQueries = 0;
 	

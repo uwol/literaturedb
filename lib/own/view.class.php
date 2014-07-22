@@ -28,7 +28,7 @@ class LibView{
 				if($document['title'] != '')
 					$retstr .= LibString::protectXSS(LibString::truncate($document['title'], 50, ' ...'));
 				else
-					$retstr .= 'misssing title';
+					$retstr .= 'missing title';
 				$retstr .= '</a><br />';
 				$retstr .= '<div class="authors">' . LibDocument::buildAuthorsString($document) . '</div>';
 				$retstr .= '<div class="tags">' . LibDocument::buildTagsString($document) . '</div>';
