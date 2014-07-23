@@ -43,7 +43,7 @@ elseif(isset($_POST['action']) && $_POST['action'] == 'delete' &&
 
 	if(!$user['is_admin']){ //admins cannot be deleted
 		$adminUser = LibUser::fetch($sessionUser->getId());
-		if(LibUser::checkPassword($_POST['password'], $adminUser['password_hash'], $adminUser['password_salt'])){
+		if(LibUser::checkPassword($_POST['password'], $adminUser['password_hash'])){
 			LibUser::delete($user['id']);
 			LibGlobal::$notificationTexts[] = 'The user account has been deleted.';
 		}

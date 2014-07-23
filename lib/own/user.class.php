@@ -102,7 +102,6 @@ class LibUser{
 		$user['username'] = $row['username'];
 		$user['emailaddress'] = $row['emailaddress'];
 		$user['password_hash'] = $row['password_hash'];
-		$user['password_salt'] = $row['password_salt'];
 		$user['is_admin'] = (in_array($row['username'], LibConfig::$admins)) ? 1 : 0;
 		$user['activated'] = ($row['activated'] || $user['is_admin']) ? 1 : 0;
 		return $user;
@@ -119,13 +118,12 @@ class LibUser{
 		$count = LibDb::queryAttribute($cmd);
 		
 		if($count > 0){
-			$cmd = sprintf('UPDATE literaturedb_sys_user SET firstname = %s, lastname = %s, username = %s, emailaddress = %s, password_hash = %s, password_salt = %s, activated = %s WHERE id = %s',
+			$cmd = sprintf('UPDATE literaturedb_sys_user SET firstname = %s, lastname = %s, username = %s, emailaddress = %s, password_hash = %s, activated = %s WHERE id = %s',
 				LibDb::secInp(trim($user['firstname'])),
 				LibDb::secInp(trim($user['lastname'])),
 				LibDb::secInp(trim($user['username'])),
 				LibDb::secInp(trim($user['emailaddress'])),
 				LibDb::secInp(trim($user['password_hash'])),
-				LibDb::secInp(trim($user['password_salt'])),
 				LibDb::secInp(trim($user['activated'])),
 				LibDb::secInp($user['id']));
 			LibDb::query($cmd);
@@ -133,13 +131,12 @@ class LibUser{
 			return $user['id'];
 		}
 		else{
-			$cmd = sprintf('INSERT INTO literaturedb_sys_user (firstname, lastname, username, emailaddress, password_hash, password_salt, activated) VALUES (%s, %s, %s, %s, %s, %s, %s)',
+			$cmd = sprintf('INSERT INTO literaturedb_sys_user (firstname, lastname, username, emailaddress, password_hash, activated) VALUES (%s, %s, %s, %s, %s, %s)',
 				LibDb::secInp(trim($user['firstname'])),
 				LibDb::secInp(trim($user['lastname'])),
 				LibDb::secInp(trim($user['username'])),
 				LibDb::secInp(trim($user['emailaddress'])),
 				LibDb::secInp(trim($user['password_hash'])),
-				LibDb::secInp(trim($user['password_salt'])),
 				LibDb::secInp(trim($user['activated'])));
 			LibDb::query($cmd);
 	
@@ -409,7 +406,7 @@ class LibUser{
 		}
 
 		//7. check password
-		if(self::checkPassword($password, $user['password_hash'], $user['password_salt'])){
+		if(self::checkPassword($password, $user['password_hash'])){
 			//a. login successful
 			$this->loggedIn = true;
 
@@ -448,19 +445,11 @@ class LibUser{
 		return $phpassHasher->HashPassword($password);
 	}
 	
-	static function checkPassword($password, $storedHash, $storedSalt){
+	static function checkPassword($password, $storedHash){
 		$password = trim($password);
 		$storedHash = trim($storedHash);
-		$storedSalt = trim($storedSalt);
 	
-		//old way based on SHA1 and salt
-		if($password != '' && $storedHash != '' && $storedSalt != ''){
-			if(trim($storedHash) == sha1(trim($storedSalt).$password))
-				return true;
-		}
-
-		//new way based on bcrypt
-		if($password != '' && $storedHash != '' && $storedSalt == ''){
+		if($password != '' && $storedHash != ''){
 			$phpassHasher = new PasswordHash(12, FALSE);
 			return $phpassHasher->CheckPassword($password, $storedHash);
 		}

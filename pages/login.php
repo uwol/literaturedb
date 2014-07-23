@@ -41,7 +41,6 @@ if(isset($_POST['reset_emailaddress']) && $_POST['reset_emailaddress'] != ""){
 			$passwordHash = LibUser::encryptPassword($newPassword);
 		
 			$user['password_hash'] = $passwordHash;
-			$user['password_salt'] = '';
 
 			LibUser::save($user);
 		

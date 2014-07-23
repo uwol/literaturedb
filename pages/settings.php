@@ -47,7 +47,7 @@ if(isset($_POST['action']) && $_POST['action'] == 'passwordChange'){
 
 	if($oldPassword == "")
 		$oldPasswordMissing = true;
-	elseif(!LibUser::checkPassword($oldPassword, $user['password_hash'], $user['password_salt']))
+	elseif(!LibUser::checkPassword($oldPassword, $user['password_hash']))
 		$oldPasswordWrong = true;
 
 	if($newPassword1 == "")
@@ -64,7 +64,6 @@ if(isset($_POST['action']) && $_POST['action'] == 'passwordChange'){
 		$passwordHash = LibUser::encryptPassword($newPassword1);
 	
 		$user['password_hash'] = $passwordHash;
-		$user['password_salt'] = '';
 		LibUser::save($user);
 		LibGlobal::$notificationTexts[] = 'The password has been changed.';
 	}
@@ -134,7 +133,7 @@ if(isset($_POST['action']) && $_POST['action'] == 'userDetailsChange'){
 if(isset($_POST['action']) && $_POST['action'] == 'closeAccount' && isset($_POST['password'])){
 	if(!$sessionUser->isAdmin()){ //admins cannot be deleted
 		$user = LibUser::fetch($sessionUser->getId());
-		if(LibUser::checkPassword($_POST['password'], $user['password_hash'], $user['password_salt'])){
+		if(LibUser::checkPassword($_POST['password'], $user['password_hash'])){
 			LibRouter::user_delete($sessionUser->id, $sessionUser->getUserAddress());
 			LibGlobal::$notificationTexts[] = 'Your user account has been deleted.';
 			$sessionUser = null;

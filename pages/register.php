@@ -116,7 +116,6 @@ if(isset($_POST['action']) && $_POST['action'] == 'register'){
 		$user['username'] = $username;
 		$user['emailaddress'] = $emailAddress;
 		$user['password_hash'] = $passwordHash;
-		$user['password_salt'] = '';
 		$user['activated'] = (in_array($username, LibConfig::$admins)) ? 1 : 0;
 		LibUser::save($user);
 		

@@ -157,7 +157,6 @@ $cmd = "CREATE TABLE literaturedb_sys_user (
   username varchar(255),
   emailaddress varchar(255),
   password_hash varchar(255),
-  password_salt varchar(255),
   activated tinyint(4) NOT NULL default 0,
   PRIMARY KEY (id),
   UNIQUE KEY username (username),
