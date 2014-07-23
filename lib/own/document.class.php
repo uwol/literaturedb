@@ -252,6 +252,9 @@ class LibDocument{
 		$cmd = sprintf('SELECT COUNT(*) FROM literaturedb_document WHERE id = %s',
 			LibDb::secInp($document['id']));
 		$count = LibDb::queryAttribute($cmd);
+		
+		// clean input; bibtex page double dashes are reduced to one dash
+		$pages = preg_replace('/([0-9]+)--([0-9]+)/', '$1-$2', $document['pages']);
 
 		if($count > 0){
 			// filesize, filename, extension, datetime_created, user_id may not be updated here! they are static
@@ -270,7 +273,7 @@ class LibDocument{
 				LibDb::secInp(LibDb::zerofy(trim($document['journal_id']))),
 				LibDb::secInp(trim($document['number'])),
 				LibDb::secInp(trim($document['organization'])),
-				LibDb::secInp(trim($document['pages'])),
+				LibDb::secInp(trim($pages)),
 				LibDb::secInp(LibDb::zerofy(trim($document['publisher_id']))),
 				LibDb::secInp(trim($document['school'])),
 				LibDb::secInp(trim($document['series'])),
@@ -300,7 +303,7 @@ class LibDocument{
 				LibDb::secInp(LibDb::zerofy(trim($document['journal_id']))),
 				LibDb::secInp(trim($document['number'])),
 				LibDb::secInp(trim($document['organization'])),
-				LibDb::secInp(trim($document['pages'])),
+				LibDb::secInp(trim($pages)),
 				LibDb::secInp(LibDb::zerofy(trim($document['publisher_id']))),
 				LibDb::secInp(trim($document['school'])),
 				LibDb::secInp(trim($document['series'])),

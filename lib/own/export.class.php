@@ -242,8 +242,10 @@ class LibExport{
 			$dataEntries[] = 'annote       = ' .self::bibtexEscape($document['note']);
 		if($document['organization'] != '')
 			$dataEntries[] = 'organization = ' .self::bibtexEscape($document['organization']);
-		if($document['pages'] != '')
-			$dataEntries[] = 'pages        = ' .self::bibtexEscape($document['pages']);
+		if($document['pages'] != ''){
+			$pages = preg_replace('/([0-9]+)-([0-9]+)/', '$1--$2', $document['pages']);
+			$dataEntries[] = 'pages        = ' .self::bibtexEscape($pages);
+		}
 		if($document['school'] != '')
 			$dataEntries[] = 'school       = ' .self::bibtexEscape($document['school']);
 		if($document['series'] != '')
