@@ -34,7 +34,7 @@ class LibView{
 				$retstr .= '<div class="tags">' . LibDocument::buildTagsString($document) . '</div>';
 				$retstr .= '</td>';
 		
-				$retstr .= '<td style="width:15%;padding-bottom:5px">' . LibString::protectXSS(substr($document['datetime_upload'], 0, 10)) . '</td>';
+				$retstr .= '<td style="width:15%;padding-bottom:5px">' . LibString::protectXSS(substr($document['datetime_created'], 0, 10)) . '</td>';
 				$retstr .= '</tr>';
 			}
 		}

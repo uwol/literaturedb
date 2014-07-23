@@ -17,7 +17,7 @@ along with literaturedb. If not, see <http://www.gnu.org/licenses/>.
 */
 
 class LibDocument{
-	private static $fields = array('id', 'hash', 'entrytype_id', 'title', 'date', 'abstract', 'address', 'booktitle', 'chapter', 'doi', 'ean', 'edition', 'institution', 'journal_id', 'number', 'organization', 'pages', 'publisher_id', 'school', 'series', 'url', 'volume', 'note', 'rating', 'filename', 'extension', 'filesize', 'datetime_upload', 'user_id');
+	private static $fields = array('id', 'hash', 'entrytype_id', 'title', 'date', 'abstract', 'address', 'booktitle', 'chapter', 'doi', 'ean', 'edition', 'institution', 'journal_id', 'number', 'organization', 'pages', 'publisher_id', 'school', 'series', 'url', 'volume', 'note', 'rating', 'filename', 'extension', 'filesize', 'datetime_created', 'user_id');
 	
 	static function fetchAll($userId){
 		$cmd = sprintf('SELECT id FROM literaturedb_document WHERE user_id = %s ORDER BY id',
@@ -39,7 +39,7 @@ class LibDocument{
 		if(is_numeric($offset) && $offset >= 0)
 			$internalOffset = $offset;
 		
-		$cmd = sprintf('SELECT id FROM literaturedb_document WHERE user_id = %s ORDER BY datetime_upload DESC LIMIT '.$internalOffset.','.$internalLimit,
+		$cmd = sprintf('SELECT id FROM literaturedb_document WHERE user_id = %s ORDER BY datetime_created DESC LIMIT '.$internalOffset.','.$internalLimit,
 			LibDb::secInp($userId));
 		$result = LibDb::query($cmd);
 		
@@ -73,7 +73,7 @@ class LibDocument{
 	}
 	
 	static function fetchWithSearch($searchString, $userId){
-		$cmd = sprintf('SELECT literaturedb_document.id FROM literaturedb_document WHERE literaturedb_document.user_id = %s AND (literaturedb_document.id = %s OR literaturedb_document.title LIKE %s OR literaturedb_document.date LIKE %s OR literaturedb_document.abstract LIKE %s OR literaturedb_document.address LIKE %s OR literaturedb_document.booktitle LIKE %s OR literaturedb_document.chapter LIKE %s OR literaturedb_document.doi LIKE %s OR literaturedb_document.ean LIKE %s OR literaturedb_document.edition LIKE %s OR literaturedb_document.institution LIKE %s OR literaturedb_document.number LIKE %s OR literaturedb_document.organization LIKE %s OR literaturedb_document.pages LIKE %s OR literaturedb_document.school LIKE %s OR literaturedb_document.series LIKE %s OR literaturedb_document.url LIKE %s OR literaturedb_document.volume LIKE %s OR literaturedb_document.note LIKE %s OR literaturedb_document.filename LIKE %s OR literaturedb_document.extension LIKE %s OR literaturedb_document.datetime_upload LIKE %s OR literaturedb_document.id IN (SELECT literaturedb_asso_document_author.document_id FROM literaturedb_asso_document_author, literaturedb_person WHERE literaturedb_asso_document_author.person_id = literaturedb_person.id AND (literaturedb_person.firstname LIKE %s OR literaturedb_person.lastname LIKE %s)) OR literaturedb_document.id IN (SELECT literaturedb_asso_document_editor.document_id FROM literaturedb_asso_document_editor, literaturedb_person WHERE literaturedb_asso_document_editor.person_id = literaturedb_person.id AND (literaturedb_person.firstname LIKE %s OR literaturedb_person.lastname LIKE %s)) OR literaturedb_document.id IN (SELECT literaturedb_asso_document_tag.document_id FROM literaturedb_asso_document_tag, literaturedb_tag WHERE literaturedb_asso_document_tag.tag_id = literaturedb_tag.id AND literaturedb_tag.name LIKE %s) OR literaturedb_document.journal_id IN (SELECT literaturedb_journal.id FROM literaturedb_journal WHERE literaturedb_journal.name LIKE %s) OR literaturedb_document.publisher_id IN (SELECT literaturedb_publisher.id FROM literaturedb_publisher WHERE literaturedb_publisher.name LIKE %s)) ORDER BY literaturedb_document.date DESC',
+		$cmd = sprintf('SELECT literaturedb_document.id FROM literaturedb_document WHERE literaturedb_document.user_id = %s AND (literaturedb_document.id = %s OR literaturedb_document.title LIKE %s OR literaturedb_document.date LIKE %s OR literaturedb_document.abstract LIKE %s OR literaturedb_document.address LIKE %s OR literaturedb_document.booktitle LIKE %s OR literaturedb_document.chapter LIKE %s OR literaturedb_document.doi LIKE %s OR literaturedb_document.ean LIKE %s OR literaturedb_document.edition LIKE %s OR literaturedb_document.institution LIKE %s OR literaturedb_document.number LIKE %s OR literaturedb_document.organization LIKE %s OR literaturedb_document.pages LIKE %s OR literaturedb_document.school LIKE %s OR literaturedb_document.series LIKE %s OR literaturedb_document.url LIKE %s OR literaturedb_document.volume LIKE %s OR literaturedb_document.note LIKE %s OR literaturedb_document.filename LIKE %s OR literaturedb_document.extension LIKE %s OR literaturedb_document.datetime_created LIKE %s OR literaturedb_document.id IN (SELECT literaturedb_asso_document_author.document_id FROM literaturedb_asso_document_author, literaturedb_person WHERE literaturedb_asso_document_author.person_id = literaturedb_person.id AND (literaturedb_person.firstname LIKE %s OR literaturedb_person.lastname LIKE %s)) OR literaturedb_document.id IN (SELECT literaturedb_asso_document_editor.document_id FROM literaturedb_asso_document_editor, literaturedb_person WHERE literaturedb_asso_document_editor.person_id = literaturedb_person.id AND (literaturedb_person.firstname LIKE %s OR literaturedb_person.lastname LIKE %s)) OR literaturedb_document.id IN (SELECT literaturedb_asso_document_tag.document_id FROM literaturedb_asso_document_tag, literaturedb_tag WHERE literaturedb_asso_document_tag.tag_id = literaturedb_tag.id AND literaturedb_tag.name LIKE %s) OR literaturedb_document.journal_id IN (SELECT literaturedb_journal.id FROM literaturedb_journal WHERE literaturedb_journal.name LIKE %s) OR literaturedb_document.publisher_id IN (SELECT literaturedb_publisher.id FROM literaturedb_publisher WHERE literaturedb_publisher.name LIKE %s)) ORDER BY literaturedb_document.date DESC',
 			LibDb::secInp($userId),
 			LibDb::secInp($searchString),
 			LibDb::secInp('%'.$searchString.'%'),
@@ -123,7 +123,7 @@ class LibDocument{
 	}
 	
 	static function fetch($id){
-		$cmd = sprintf('SELECT literaturedb_document.id, literaturedb_document.hash, literaturedb_document.entrytype_id, literaturedb_document.title, literaturedb_document.date, literaturedb_document.abstract, literaturedb_document.address, literaturedb_document.booktitle, literaturedb_document.chapter, literaturedb_document.doi, literaturedb_document.ean, literaturedb_document.edition, literaturedb_document.institution, literaturedb_document.journal_id, literaturedb_document.number, literaturedb_document.organization, literaturedb_document.pages, literaturedb_document.publisher_id, literaturedb_document.school, literaturedb_document.series, literaturedb_document.url, literaturedb_document.volume, literaturedb_document.note, literaturedb_document.rating, literaturedb_document.filename, literaturedb_document.extension, literaturedb_document.filesize, literaturedb_document.datetime_upload, literaturedb_document.user_id, literaturedb_publisher.name AS publisher_name, literaturedb_journal.name AS journal_name FROM literaturedb_document LEFT JOIN literaturedb_publisher ON literaturedb_publisher.id = literaturedb_document.publisher_id LEFT JOIN literaturedb_journal ON literaturedb_journal.id = literaturedb_document.journal_id WHERE literaturedb_document.id = %s',
+		$cmd = sprintf('SELECT literaturedb_document.id, literaturedb_document.hash, literaturedb_document.entrytype_id, literaturedb_document.title, literaturedb_document.date, literaturedb_document.abstract, literaturedb_document.address, literaturedb_document.booktitle, literaturedb_document.chapter, literaturedb_document.doi, literaturedb_document.ean, literaturedb_document.edition, literaturedb_document.institution, literaturedb_document.journal_id, literaturedb_document.number, literaturedb_document.organization, literaturedb_document.pages, literaturedb_document.publisher_id, literaturedb_document.school, literaturedb_document.series, literaturedb_document.url, literaturedb_document.volume, literaturedb_document.note, literaturedb_document.rating, literaturedb_document.filename, literaturedb_document.extension, literaturedb_document.filesize, literaturedb_document.datetime_created, literaturedb_document.user_id, literaturedb_publisher.name AS publisher_name, literaturedb_journal.name AS journal_name FROM literaturedb_document LEFT JOIN literaturedb_publisher ON literaturedb_publisher.id = literaturedb_document.publisher_id LEFT JOIN literaturedb_journal ON literaturedb_journal.id = literaturedb_document.journal_id WHERE literaturedb_document.id = %s',
 			LibDb::secInp($id));
 		$row = LibDb::queryArray($cmd);
 		
@@ -134,7 +134,7 @@ class LibDocument{
 		if($hash == '')
 			return;
 	
-		$cmd = sprintf('SELECT literaturedb_document.id, literaturedb_document.hash, literaturedb_document.entrytype_id, literaturedb_document.title, literaturedb_document.date, literaturedb_document.abstract, literaturedb_document.address, literaturedb_document.booktitle, literaturedb_document.chapter, literaturedb_document.doi, literaturedb_document.ean, literaturedb_document.edition, literaturedb_document.institution, literaturedb_document.journal_id, literaturedb_document.number, literaturedb_document.organization, literaturedb_document.pages, literaturedb_document.publisher_id, literaturedb_document.school, literaturedb_document.series, literaturedb_document.url, literaturedb_document.volume, literaturedb_document.note, literaturedb_document.rating, literaturedb_document.filename, literaturedb_document.extension, literaturedb_document.filesize, literaturedb_document.datetime_upload, literaturedb_document.user_id, literaturedb_publisher.name AS publisher_name, literaturedb_journal.name AS journal_name FROM literaturedb_document LEFT JOIN literaturedb_publisher ON literaturedb_publisher.id = literaturedb_document.publisher_id LEFT JOIN literaturedb_journal ON literaturedb_journal.id = literaturedb_document.journal_id WHERE literaturedb_document.hash = %s AND literaturedb_document.user_id = %s',
+		$cmd = sprintf('SELECT literaturedb_document.id, literaturedb_document.hash, literaturedb_document.entrytype_id, literaturedb_document.title, literaturedb_document.date, literaturedb_document.abstract, literaturedb_document.address, literaturedb_document.booktitle, literaturedb_document.chapter, literaturedb_document.doi, literaturedb_document.ean, literaturedb_document.edition, literaturedb_document.institution, literaturedb_document.journal_id, literaturedb_document.number, literaturedb_document.organization, literaturedb_document.pages, literaturedb_document.publisher_id, literaturedb_document.school, literaturedb_document.series, literaturedb_document.url, literaturedb_document.volume, literaturedb_document.note, literaturedb_document.rating, literaturedb_document.filename, literaturedb_document.extension, literaturedb_document.filesize, literaturedb_document.datetime_created, literaturedb_document.user_id, literaturedb_publisher.name AS publisher_name, literaturedb_journal.name AS journal_name FROM literaturedb_document LEFT JOIN literaturedb_publisher ON literaturedb_publisher.id = literaturedb_document.publisher_id LEFT JOIN literaturedb_journal ON literaturedb_journal.id = literaturedb_document.journal_id WHERE literaturedb_document.hash = %s AND literaturedb_document.user_id = %s',
 			LibDb::secInp($hash),
 			LibDb::secInp($userId));
 		$row = LibDb::queryArray($cmd);
@@ -179,7 +179,7 @@ class LibDocument{
 		$array['filename'] = $row['filename'];
 		$array['extension'] = $row['extension'];
 		$array['filesize'] = $row['filesize'];
-		$array['datetime_upload'] = $row['datetime_upload'];
+		$array['datetime_created'] = $row['datetime_created'];
 		
 		$entryTypes = self::fetchAllEntryTypes();
 		$array['entrytype_name'] = '';
@@ -254,7 +254,7 @@ class LibDocument{
 		$count = LibDb::queryAttribute($cmd);
 
 		if($count > 0){
-			// filesize, filename, extension, datetime_upload, user_id may not be updated here! they are static
+			// filesize, filename, extension, datetime_created, user_id may not be updated here! they are static
 			$cmd = sprintf('UPDATE literaturedb_document SET entrytype_id = %s, title = %s, date = %s, abstract = %s, address = %s, booktitle = %s, chapter = %s, doi = %s, ean = %s, edition = %s, institution = %s, journal_id = %s, number = %s, organization = %s, pages = %s, publisher_id = %s, school = %s, series = %s, url = %s, volume = %s, note = %s, rating = %s WHERE id = %s',
 				LibDb::secInp(LibDb::zerofy(trim($document['entrytype_id']))),
 				LibDb::secInp(trim($document['title'])),
@@ -284,7 +284,7 @@ class LibDocument{
 			$id = $document['id'];
 		}
 		else{
-			$cmd = sprintf('INSERT IGNORE INTO literaturedb_document (hash, entrytype_id, title, date, abstract, address, booktitle, chapter, doi, ean, edition, institution, journal_id, number, organization, pages, publisher_id, school, series, url, volume, note, rating, filename, extension, filesize, datetime_upload, user_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), %s)',
+			$cmd = sprintf('INSERT IGNORE INTO literaturedb_document (hash, entrytype_id, title, date, abstract, address, booktitle, chapter, doi, ean, edition, institution, journal_id, number, organization, pages, publisher_id, school, series, url, volume, note, rating, filename, extension, filesize, datetime_created, user_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), %s)',
 				LibDb::secInp(trim($document['hash'])),
 				LibDb::secInp(LibDb::zerofy(trim($document['entrytype_id']))),
 				LibDb::secInp(trim($document['title'])),
@@ -313,7 +313,7 @@ class LibDocument{
 				LibDb::secInp(trim($document['filesize'])),
 				LibDb::secInp(trim($document['user_id'])));
 			LibDb::query($cmd);
-	
+
 			$id = mysql_insert_id();
 		}
 		
@@ -347,7 +347,6 @@ class LibDocument{
 				}
 			}
 		}
-
 
 		/*
 		* Authors
@@ -427,6 +426,8 @@ class LibDocument{
 			}
 		}
 		
+		LibDocument::deleteOrphans();
+		
 		return $id;
 	}
 	
@@ -445,14 +446,61 @@ class LibDocument{
 			LibDb::SecInp($documentId));
 		LibDb::query($cmd);
 		
+		LibDocument::deleteOrphans();
+		
 		$deleted = true;
 
 		if($count < 2){
 			$filePath = self::getFilePath($hash);
-			if(is_file($filePath))
+			if(is_file($filePath)){
 				unlink($filePath);
+			}
 		}
 		return $deleted;
+	}
+	
+	static function deleteOrphans(){
+		/*
+		* Delete orphaned associations between documents and authors
+		*/	
+		$cmd = 'DELETE FROM literaturedb_asso_document_author WHERE document_id NOT IN (SELECT id FROM literaturedb_document) OR person_id NOT IN (SELECT id FROM literaturedb_person)';
+		LibDb::query($cmd);
+
+		/*
+		* Delete orphaned associations between documents and editors
+		*/		
+		$cmd = 'DELETE FROM literaturedb_asso_document_editor WHERE document_id NOT IN (SELECT id FROM literaturedb_document) OR person_id NOT IN (SELECT id FROM literaturedb_person)';
+		LibDb::query($cmd);
+
+		/*
+		* Delete orphaned associations between documents and tags
+		*/	
+		$cmd = 'DELETE FROM literaturedb_asso_document_tag WHERE document_id NOT IN (SELECT id FROM literaturedb_document) OR tag_id NOT IN (SELECT id FROM literaturedb_tag)';
+		LibDb::query($cmd);
+	
+		/*
+		* Delete orphaned journals
+		*/		
+		$cmd = 'DELETE FROM literaturedb_journal WHERE id NOT IN (SELECT journal_id FROM literaturedb_document)';
+		LibDb::query($cmd);
+		
+		/*
+		* Delete orphaned publishers
+		*/		
+		$cmd = 'DELETE FROM literaturedb_publisher WHERE id NOT IN (SELECT publisher_id FROM literaturedb_document)';
+		LibDb::query($cmd);
+		
+		/*
+		* Delete orphaned tags
+		*/
+		$cmd = 'DELETE FROM literaturedb_tag WHERE id NOT IN (SELECT tag_id FROM literaturedb_asso_document_tag)';
+		LibDb::query($cmd);
+		
+		/*
+		* Delete orphaned authors and editors
+		*/
+		$cmd = 'DELETE FROM literaturedb_person WHERE id NOT IN (SELECT person_id FROM literaturedb_asso_document_author) AND id NOT IN (SELECT person_id FROM literaturedb_asso_document_editor)';
+		LibDb::query($cmd);	
 	}
 	
 	/*

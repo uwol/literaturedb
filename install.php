@@ -28,7 +28,7 @@ $cmd = "CREATE TABLE literaturedb_asso_document_author (
   document_id bigint(20) unsigned NOT NULL,
   person_id bigint(20) unsigned NOT NULL,
   position tinyint(4) default NULL,
-  PRIMARY KEY  (document_id,person_id),
+  PRIMARY KEY (document_id,person_id),
   KEY person_id (person_id)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 LibDb::query($cmd);
@@ -38,7 +38,7 @@ $cmd = "CREATE TABLE literaturedb_asso_document_editor (
   document_id bigint(20) unsigned NOT NULL,
   person_id bigint(20) unsigned NOT NULL,
   position tinyint(4) default NULL,
-  PRIMARY KEY  (document_id,person_id),
+  PRIMARY KEY (document_id,person_id),
   KEY person_id (person_id)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 LibDb::query($cmd);
@@ -47,7 +47,7 @@ echo 'Creating table: literaturedb_asso_document_tag<br />';
 $cmd = "CREATE TABLE literaturedb_asso_document_tag (
   document_id bigint(20) unsigned NOT NULL,
   tag_id bigint(20) unsigned NOT NULL,
-  PRIMARY KEY  (document_id,tag_id),
+  PRIMARY KEY (document_id,tag_id),
   KEY tag_id (tag_id)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 LibDb::query($cmd);
@@ -55,7 +55,7 @@ LibDb::query($cmd);
 echo 'Creating table: literaturedb_document<br />';
 $cmd = "CREATE TABLE literaturedb_document (
   id bigint(20) unsigned NOT NULL auto_increment,
-  hash varchar(255),
+  datetime_created datetime,
   entrytype_id int(11),
   title varchar(255),
   date date default '0000-00-00',
@@ -81,20 +81,20 @@ $cmd = "CREATE TABLE literaturedb_document (
   filename varchar(255),
   extension varchar(255),
   filesize varchar(255),
-  datetime_upload datetime default '0000-00-00 00:00:00',
+  hash varchar(255),
   user_id bigint(20) unsigned NOT NULL,
-  PRIMARY KEY  (id),
+  PRIMARY KEY (id),
   KEY user_id (user_id),
-  KEY datetime_upload (datetime_upload)
+  KEY datetime_created (datetime_created)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
 LibDb::query($cmd);
 
 echo 'Creating table: literaturedb_journal<br />';
 $cmd = "CREATE TABLE literaturedb_journal (
   id bigint(20) unsigned NOT NULL auto_increment,
-  name varchar(255),
+  name varchar(255) NOT NULL,
   user_id bigint(20) unsigned NOT NULL,
-  PRIMARY KEY  (id),
+  PRIMARY KEY (id),
   UNIQUE KEY name (name,user_id),
   KEY user_id (user_id)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
@@ -108,8 +108,8 @@ $cmd = "CREATE TABLE literaturedb_person (
   lastname varchar(255),
   suffix varchar(255),
   user_id bigint(20) unsigned NOT NULL,
-  PRIMARY KEY  (id),
-  UNIQUE KEY forename (firstname(100),lastname(100),user_id),
+  PRIMARY KEY (id),
+  UNIQUE KEY firstname (firstname(100),lastname(100),user_id),
   KEY user_id (user_id)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
 LibDb::query($cmd);
@@ -119,7 +119,7 @@ $cmd = "CREATE TABLE literaturedb_publisher (
   id bigint(20) unsigned NOT NULL auto_increment,
   name varchar(255) NOT NULL,
   user_id bigint(20) unsigned NOT NULL,
-  PRIMARY KEY  (id),
+  PRIMARY KEY (id),
   UNIQUE KEY name (name,user_id),
   KEY user_id (user_id)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
@@ -131,8 +131,8 @@ $cmd = "CREATE TABLE literaturedb_sys_event (
   user_id bigint(20) unsigned NOT NULL,
   date datetime NOT NULL,
   type int(11) NOT NULL,
-  ipaddress varchar(255) NOT NULL,
-  PRIMARY KEY  (id),
+  ipaddress varchar(255),
+  PRIMARY KEY (id),
   KEY user_id (user_id)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
 LibDb::query($cmd);
@@ -144,7 +144,7 @@ $cmd = "CREATE TABLE literaturedb_sys_share (
   remote_user_address varchar(255) NOT NULL,
   following tinyint(4) NOT NULL default 1,
   sharing tinyint(4) NOT NULL default 1,
-  PRIMARY KEY  (id),
+  PRIMARY KEY (id),
   UNIQUE KEY local_user_id (local_user_id,remote_user_address)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
 LibDb::query($cmd);
@@ -159,7 +159,7 @@ $cmd = "CREATE TABLE literaturedb_sys_user (
   password_hash varchar(255),
   password_salt varchar(255),
   activated tinyint(4) NOT NULL default 0,
-  PRIMARY KEY  (id),
+  PRIMARY KEY (id),
   UNIQUE KEY username (username),
   UNIQUE KEY email (emailaddress)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
@@ -170,7 +170,7 @@ $cmd = "CREATE TABLE literaturedb_tag (
   id bigint(20) unsigned NOT NULL auto_increment,
   name varchar(255) NOT NULL,
   user_id bigint(20) unsigned NOT NULL,
-  PRIMARY KEY  (id),
+  PRIMARY KEY (id),
   UNIQUE KEY name (name,user_id),
   KEY user_id (user_id)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";

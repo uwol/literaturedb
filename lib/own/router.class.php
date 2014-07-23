@@ -318,7 +318,7 @@ class LibRouter{
 				$document['filename'] = $documentInDb['filename'];
 				$document['extension'] = $documentInDb['extension'];
 				$document['filesize'] = $documentInDb['filesize'];
-				$document['datetime_upload'] = date('Y-m-d h:i:s');
+				$document['datetime_created'] = date('Y-m-d h:i:s');
 				return LibDocument::save($document);
 			}
 		}

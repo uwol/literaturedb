@@ -18,8 +18,9 @@ along with literaturedb. If not, see <http://www.gnu.org/licenses/>.
 
 class LibCronjobs{
 	static function run(){
-		if(!self::hasHtaccessDenyFile(LibConfig::$documentDir.'/'))
+		if(!self::hasHtaccessDenyFile(LibConfig::$documentDir.'/')){
 			self::generateHtaccessDenyFile(LibConfig::$documentDir.'/');
+		}
 	}
 	
 	static function generateHtaccessDenyFile($directory){
@@ -36,37 +37,24 @@ class LibCronjobs{
     
     static function hasHtaccessDenyFile($directory){
     	$filename = $directory.".htaccess";
-    	if(!is_file($filename))
+    	
+    	if(!is_file($filename)){
     		return false;
+    	}
+    	
     	$handle = @fopen($filename, "r");
     	$content = @fread($handle, @filesize($filename));
     	@fclose($handle);
     	
-    	if($content == "deny from all")
+    	if($content == "deny from all"){
     		return true;
-    	else
+    	}
+    	else{
     		return false;
+    	}
     }
     
     static function cleanDb(){
-		$cmd = 'DELETE FROM literaturedb_asso_document_author WHERE document_id NOT IN (SELECT id FROM literaturedb_document) OR person_id NOT IN (SELECT id FROM literaturedb_person)';
-		LibDb::query($cmd);
-
-		$cmd = 'DELETE FROM literaturedb_asso_document_editor WHERE document_id NOT IN (SELECT id FROM literaturedb_document) OR person_id NOT IN (SELECT id FROM literaturedb_person)';
-		LibDb::query($cmd);
-
-		$cmd = 'DELETE FROM literaturedb_asso_document_tag WHERE document_id NOT IN (SELECT id FROM literaturedb_document) OR tag_id NOT IN (SELECT id FROM literaturedb_tag)';
-		LibDb::query($cmd);
-
-		$cmd = 'DELETE FROM literaturedb_journal WHERE id NOT IN (SELECT journal_id FROM literaturedb_document)';
-		LibDb::query($cmd);
-
-		$cmd = 'DELETE FROM literaturedb_publisher WHERE id NOT IN (SELECT publisher_id FROM literaturedb_document)';
-		LibDb::query($cmd);
-
-		$cmd = 'DELETE FROM literaturedb_person WHERE id NOT IN (SELECT person_id FROM literaturedb_asso_document_author) AND id NOT IN (SELECT person_id FROM literaturedb_asso_document_editor)';
-		LibDb::query($cmd);
-		
 		$cmd = 'DELETE FROM literaturedb_sys_share WHERE local_user_id NOT IN (SELECT id FROM literaturedb_sys_user)';
 		LibDb::query($cmd);
 		

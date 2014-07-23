@@ -61,7 +61,7 @@ if(isset($_REQUEST['mode']))
 */
 
 //adding a file
-if((isset($_REQUEST['action']) && $_REQUEST['action'] == 'document_create') || (isset($_GET['action']) && $_GET['action'] == 'document_copy')){
+if((isset($_POST['action']) && $_POST['action'] == 'document_create') || (isset($_GET['action']) && $_GET['action'] == 'document_copy')){
 	$documentAddress = '';
 	if(isset($_GET['documentAddress']))
 		$documentAddress = trim($_GET['documentAddress']);
@@ -73,6 +73,7 @@ if((isset($_REQUEST['action']) && $_REQUEST['action'] == 'document_create') || (
 	*/
 	if(isset($_FILES['file']['tmp_name']) && $_FILES['file']['tmp_name'] != ''){ //file upload?
 		$hash = sha1_file($_FILES['file']['tmp_name']);
+		
 		if($hash == ''){
 			LibGlobal::$errorTexts[] = 'The hash value is empty although a file has been uploaded.';
 		}
@@ -89,6 +90,7 @@ if((isset($_REQUEST['action']) && $_REQUEST['action'] == 'document_create') || (
 		}
 		else{ //remote file
 			$hash = sha1(LibRouter::document_fetchFileContents($documentAddress, $sessionUser->getUserAddress()));
+			
 			if(!is_file(LibDocument::getFilePath($hash))){ //file does not exist yet?
 				$handle = fopen(LibDocument::getFilePath($hash), 'w+');
 				fwrite($handle, LibRouter::document_fetchFileContents($documentAddress, $sessionUser->getUserAddress()));
@@ -270,6 +272,7 @@ if(LibDocument::isValidDocumentAddress($documentAddress)){
 			if($document['abstract'])
 				echo '<tr><td>Abstract:</td><td>' .nl2br(LibString::protectXSS($document['abstract'])). '</td></tr>';
 			echo '<tr><td>Tags:</td><td>' .LibDocument::buildTagsString($document). '</td></tr>';
+			echo '<tr><td>Created:</td><td>' .LibString::protectXSS($document['datetime_created']). '</td></tr>';
 
 			/*
 			* bibtex meta data
@@ -314,11 +317,14 @@ if(LibDocument::isValidDocumentAddress($documentAddress)){
 				echo '<tr><td>Note:</td><td>' .nl2br(LibString::protectXSS($document['note'])). '</td></tr>';
 			if($document['rating'] > 0){
 				echo '<tr><td>Rating:</td><td>';
-				for($i=0;$i<5;$i++)
-					if($i < $document['rating'])
+				for($i=0;$i<5;$i++){
+					if($i < $document['rating']){
 						echo '<img src="img/icons/star.png" alt="*" style="width:18px" />';
-					else
+					}
+					else{
 						echo '<img src="img/icons/star_empty.png" style="width:18px" alt="*" />';
+					}
+				}
 				echo '</td></tr>';
 			}
 			echo '</table>';
@@ -333,18 +339,22 @@ if(LibDocument::isValidDocumentAddress($documentAddress)){
 			echo '<tr><td style="width:18%">Word:</td><td>'.LibString::protectXSS(LibDocument::getId_Word2007($document['id'])).'</td></tr>';
 			echo '</table>';			
 		
-			/*
-			* static file meta infos
-			*/
-			echo '<h2>File meta information</h2>';
-			echo '<table style="width:100%">';
-			echo '<tr><td style="width:18%">filename:</td><td>' .
-			LibString::protectXSS(substr(LibString::truncate($document['filename'], 50, ''), 0, 50)). '.' .LibString::protectXSS($document['extension']). '</td></tr>';
-			echo '<tr><td>uploaded:</td><td>' .LibString::protectXSS($document['datetime_upload']). '</td></tr>';
-			echo '<tr><td>size:</td><td>' .round($document['filesize'] / 1000, 0). ' KB</td></tr>';
-			echo '<tr><td>hash:</td><td>' .LibString::protectXSS($document['hash']). '</td></tr>';
-			echo '<tr><td colspan="2"><a href="download.php?documentAddress=' .LibString::protectXSS(LibDocument::buildMinimalDocumentAddress($document['document_address'])). '&amp;mode=literaturedb_document">Download document</a></td></tr>';
-			echo '</table>';
+			if($document['hash'] != ''){
+				/*
+				* static file meta infos
+				*/
+				echo '<h2>File meta information</h2>';
+				echo '<table style="width:100%">';
+				echo '<tr><td style="width:18%">Filename:</td><td>' .
+				LibString::protectXSS(substr(LibString::truncate($document['filename'], 50, ''), 0, 50)). '.' .LibString::protectXSS($document['extension']). '</td></tr>';
+			
+				$filesize = $document['filesize'] == '' ? '' : round($document['filesize'] / 1000, 0) . ' KB';
+			
+				echo '<tr><td>Size:</td><td>' .$filesize. '</td></tr>';
+				echo '<tr><td>Hash:</td><td>' .LibString::protectXSS($document['hash']). '</td></tr>';
+				echo '<tr><td colspan="2"><a href="download.php?documentAddress=' .LibString::protectXSS(LibDocument::buildMinimalDocumentAddress($document['document_address'])). '&amp;mode=literaturedb_document">Download document</a></td></tr>';
+				echo '</table>';
+			}
 		}
 		//-------------------------------------------------------------------------
 		/*
@@ -461,7 +471,7 @@ else{
 	$memoryLimit = (int) substr(ini_get("memory_limit"),0,-1);
 	$maxSize = $memoryLimit / 6;
 
-	echo '<p>Optional file (max. ' .round($maxSize, 0). ' MB): <input name="file" type="file" size="30" /></p>';
+	echo '<p>Append a file (max. ' .round($maxSize, 0). ' MB): <input name="file" type="file" size="30" /></p>';
 	
 	echo '<input type="hidden" name="action" value="document_create" />';
 

@@ -75,7 +75,6 @@ class LibTag{
 		$tag['tag_address'] = self::buildCanonicalTagAddress($row['id']);
 		return $tag;
 	}
-
 	
 	static function addRelativeWeights($tags){
 		$weights = array();
