@@ -48,7 +48,7 @@ class LibConfig{
 
 	//interface options
 	public static $headerSubtitle = 'the collaborative bibliography tool';
-	public static $footer = '<a href="http://validator.w3.org/check?uri=referer" title="W3C HTML Validation">XHTML</a> | <a href="http://www.raykonline.com/">Design</a> <a href="http://creativecommons.org/licenses/by/1.0/">CC</a>';
+	public static $footer = '<a href="http://validator.w3.org/check?uri=referer" title="W3C HTML Validation">XHTML</a> | Rayk <a href="http://creativecommons.org/licenses/by/1.0/">CC</a>';
 
 	
 	
