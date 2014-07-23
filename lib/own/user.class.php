@@ -458,29 +458,34 @@ class LibUser{
 	}
 
 	static function isValidPassword($password){
-		//min 1 numeral, min 1 small letter, min 1 capital letter, no spaces, min 10 characters
+		// min. 1 numeral, min. 1 small letter, min. 1 capital letter, no spaces, min. 10 characters
 		return preg_match("/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{10,}$/", trim($password));
 	}
 	
 	static function isValidEmailAddress($email){
-		if($email != "")
-	    	if (preg_match("/^([a-zA-Z0-9\.\_\-]+)@([a-zA-Z0-9\.\-]+\.[A-Za-z][A-Za-z]+)$/", $email))
+		if($email != ""){
+	    	if (preg_match("/^([a-zA-Z0-9\.\_\-]+)@([a-zA-Z0-9\.\-]+\.[A-Za-z][A-Za-z]+)$/", $email)){
 				return true;
+			}
+		}
 		return false;
 	}
 	
 	static function isValidUserAddress($userAddress){
-		//"^([a-zA-Z0-9\.\_\-]+)@([a-zA-Z0-9\.\-]+\.[A-Za-z][A-Za-z]+)$"
-		if($userAddress != "")
-	    	if (preg_match("/^([a-zA-Z0-9\.\_\-]+)@([a-zA-Z0-9\.\-]+)$/", $userAddress))
-				return true;
+		if($userAddress != ""){
+	    	if (preg_match("/^([a-z0-9\.\_\-]+)@([a-z0-9\.\-]+)$/", $userAddress)){
+				return true;	
+			}
+		}
 		return false;
 	}
 	
 	static function isValidUsername($username){
-		if($username != "")
-	    	if (preg_match("/^([a-zA-Z0-9\.\_\-]+)$/", $username))
+		if($username != ""){
+	    	if (preg_match("/^([a-z0-9\.\_\-]+)$/", $username)){
 				return true;
+			}
+		}
 		return false;
 	}
 	
