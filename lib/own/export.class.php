@@ -213,7 +213,7 @@ class LibExport{
 		if(count($document['editors']) > 0)
 			$dataEntries[] = self::getBibtex_Persons($document['editors'], 1);
 		
-		$dataEntries[] = 'title        = ' .self::bibtexEscape($document['title']);
+		$dataEntries[] = 'title        = ' .self::bibtexFormatAndEscape($document['title']);
 		if(substr($document['date'], 0, 4) > 0)
 			$dataEntries[] = 'year         = ' .substr($document['date'], 0, 4);
 		if(self::getMonth(substr($document['date'], 5, 2)) != ''){
@@ -225,37 +225,35 @@ class LibExport{
 			$dataEntries[] = 'month        = ' .self::getMonth(substr($document['date'], 5, 2)) . $dayString;
 		}
 		if($document['address'] != '')
-			$dataEntries[] = 'address      = ' .self::bibtexEscape($document['address']);
+			$dataEntries[] = 'address      = ' .self::bibtexFormatAndEscape($document['address']);
 		if($document['booktitle'] != '')
-			$dataEntries[] = 'booktitle    = ' .self::bibtexEscape($document['booktitle']);
+			$dataEntries[] = 'booktitle    = ' .self::bibtexFormatAndEscape($document['booktitle']);
 		if($document['chapter'] != '')
-			$dataEntries[] = 'chapter      = ' .self::bibtexEscape($document['chapter']);
+			$dataEntries[] = 'chapter      = ' .self::bibtexFormatAndEscape($document['chapter']);
 		if($document['edition'] != '')
-			$dataEntries[] = 'edition      = ' .self::bibtexEscape($document['edition']);
+			$dataEntries[] = 'edition      = ' .self::bibtexFormatAndEscape($document['edition']);
 		if($document['ean'] != '')
-			$dataEntries[] = 'isbn         = ' .self::bibtexEscape($document['ean']); //hier evtl. noch Check auf ISBN-EAN einbauen !!!
+			$dataEntries[] = 'isbn         = ' .self::bibtexFormatAndEscape($document['ean']);
 		if($document['institution'] != '')
-			$dataEntries[] = 'institution  = ' .self::bibtexEscape($document['institution']);
+			$dataEntries[] = 'institution  = ' .self::bibtexFormatAndEscape($document['institution']);
 		if($document['number'] != '')
-			$dataEntries[] = 'number       = ' .self::bibtexEscape($document['number']);
+			$dataEntries[] = 'number       = ' .self::bibtexFormatAndEscape($document['number']);
 		if($document['note'] != '')
-			$dataEntries[] = 'annote       = ' .self::bibtexEscape($document['note']);
+			$dataEntries[] = 'annote       = ' .self::bibtexFormatAndEscape($document['note']);
 		if($document['organization'] != '')
-			$dataEntries[] = 'organization = ' .self::bibtexEscape($document['organization']);
-		if($document['pages'] != ''){
-			$pages = preg_replace('/([0-9]+)-([0-9]+)/', '$1--$2', $document['pages']);
-			$dataEntries[] = 'pages        = ' .self::bibtexEscape($pages);
-		}
+			$dataEntries[] = 'organization = ' .self::bibtexFormatAndEscape($document['organization']);
+		if($document['pages'] != '')
+			$dataEntries[] = 'pages        = ' .self::bibtexFormatAndEscape($document['pages']);
 		if($document['school'] != '')
-			$dataEntries[] = 'school       = ' .self::bibtexEscape($document['school']);
+			$dataEntries[] = 'school       = ' .self::bibtexFormatAndEscape($document['school']);
 		if($document['series'] != '')
-			$dataEntries[] = 'series       = ' .self::bibtexEscape($document['series']);
+			$dataEntries[] = 'series       = ' .self::bibtexFormatAndEscape($document['series']);
 		if($document['volume'] != '')
-			$dataEntries[] = 'volume       = ' .self::bibtexEscape($document['volume']);
+			$dataEntries[] = 'volume       = ' .self::bibtexFormatAndEscape($document['volume']);
 		if($document['publisher_name'] != '')
-			$dataEntries[] = 'publisher    = ' .self::bibtexEscape($document['publisher_name']);
+			$dataEntries[] = 'publisher    = ' .self::bibtexFormatAndEscape($document['publisher_name']);
 		if($document['journal_name'] != '')
-			$dataEntries[] = 'journal      = ' .self::bibtexEscape($document['journal_name']);
+			$dataEntries[] = 'journal      = ' .self::bibtexFormatAndEscape($document['journal_name']);
 		if(count($document['tags'] > 0)){
 			$tagNames = array();
 			foreach($document['tags'] as $tag)
@@ -298,6 +296,11 @@ class LibExport{
 		$month = (int) $month;
 		if(isset($monthNames[$month]))
 			return $monthNames[$month];
+	}
+
+	static function bibtexFormatAndEscape($string){
+		$string = str_replace('-', '--', $string);
+		return self::bibtexEscape($string);
 	}
 
 	static function bibtexEscape($string){

@@ -71,6 +71,8 @@ class LibString{
 	static function parsePersonNameString($personNameString, $userId){
 		$persons = array();
 		
+		$personNameString = str_replace(',', ' and ', $personNameString);
+		
 		$personNameStrings = explode(' and ', $personNameString);
 		foreach($personNameStrings as $personNameString){ //for each person
 			$firstnames = array();
@@ -137,6 +139,7 @@ class LibString{
 	}
 
 	static function parseTagString($tagString, $userId){
+		$tagString = str_replace(',', ' ', $tagString);
 		$tagNamesDirty = explode(' ', $tagString);
 		
 		$tagsClean = array();
@@ -187,6 +190,10 @@ class LibString{
 		if(!$isOwn)
 			return ' alien ';
 		return '';
+	}
+	
+	static function cleanBibtexString($string){
+		return trim(str_replace('--', '-', $string));
 	}
 }
 ?>
