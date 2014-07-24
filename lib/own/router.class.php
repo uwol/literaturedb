@@ -645,8 +645,8 @@ class LibRouter{
 
 		foreach($params as $key => $value)
 			$url .= '&'.$key.'='.$value;
-		$response = @file_get_contents($url);
-		if($response == false)
+		$response = self::downloadContent($url);
+		if($response === false)
 			return 'A connection to the remote literature database could not be established.';
 		elseif($action == 'document_fetchFileContents')
 			return $response;
@@ -666,6 +666,17 @@ class LibRouter{
 		if($share['sharing'] == 1)
 			return true;
 		return false;
+	}
+	
+	function downloadContent($url){
+		if(ini_get('allow_url_fopen')){
+			return file_get_contents($url);
+		}
+		else{
+			require_once('lib/thirdparty/HttpClient.class.php');
+
+			return HttpClient::quickGet($url);
+		}
 	}
 }
 ?>
