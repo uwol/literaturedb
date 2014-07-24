@@ -143,65 +143,65 @@ class LibDocument{
 	}
 	
 	static function buildDocumentArray($row){
-		$array = '';
+		$document = '';
 	
 		if(isset($row['id']) && $row['id'] != ''){
-			$array = array();
+			$document = array();
 		
 			// copy
-			$array['id'] = $row['id'];
-			$array['document_address'] = self::buildCanonicalDocumentAddress($row['id']);
-			$array['hash'] = $row['hash'];
-			$array['entrytype_id'] = $row['entrytype_id'];
-			$array['title'] = $row['title'];		
-			$array['date'] = $row['date'];
-			$array['abstract'] = $row['abstract'];
+			$document['id'] = $row['id'];
+			$document['document_address'] = self::buildCanonicalDocumentAddress($row['id']);
+			$document['hash'] = $row['hash'];
+			$document['entrytype_id'] = $row['entrytype_id'];
+			$document['title'] = $row['title'];		
+			$document['date'] = $row['date'];
+			$document['abstract'] = $row['abstract'];
 
-			$array['address'] = $row['address'];
-			$array['booktitle'] = $row['booktitle'];
-			$array['chapter'] = $row['chapter'];
-			$array['doi'] = $row['doi'];
-			$array['ean'] = $row['ean'];
+			$document['address'] = $row['address'];
+			$document['booktitle'] = $row['booktitle'];
+			$document['chapter'] = $row['chapter'];
+			$document['doi'] = $row['doi'];
+			$document['ean'] = $row['ean'];
 		
-			$array['edition'] = '';
+			$document['edition'] = '';
 			if($row['edition'] > 0)
-				$array['edition'] = $row['edition'];	
+				$document['edition'] = $row['edition'];	
 		
-			$array['institution'] = $row['institution'];
-			$array['journal_id'] = $row['journal_id'];
-			$array['number'] = $row['number'];
-			$array['organization'] = $row['organization'];
-			$array['pages'] = $row['pages'];
-			$array['publisher_id'] = $row['publisher_id'];
-			$array['school'] = $row['school'];
-			$array['series'] = $row['series'];
-			$array['url'] = $row['url'];
-			$array['volume'] = $row['volume'];
-			$array['note'] = $row['note'];
-			$array['rating'] = $row['rating'];
-			$array['filename'] = $row['filename'];
-			$array['extension'] = $row['extension'];
-			$array['filesize'] = $row['filesize'];
-			$array['datetime_created'] = $row['datetime_created'];
+			$document['institution'] = $row['institution'];
+			$document['journal_id'] = $row['journal_id'];
+			$document['number'] = $row['number'];
+			$document['organization'] = $row['organization'];
+			$document['pages'] = $row['pages'];
+			$document['publisher_id'] = $row['publisher_id'];
+			$document['school'] = $row['school'];
+			$document['series'] = $row['series'];
+			$document['url'] = $row['url'];
+			$document['volume'] = $row['volume'];
+			$document['note'] = $row['note'];
+			$document['rating'] = $row['rating'];
+			$document['filename'] = $row['filename'];
+			$document['extension'] = $row['extension'];
+			$document['filesize'] = $row['filesize'];
+			$document['datetime_created'] = $row['datetime_created'];
 		
 			$entryTypes = self::fetchAllEntryTypes();
-			$array['entrytype_name'] = '';
+			$document['entrytype_name'] = '';
 			if(isset($row['entrytype_id']) && isset($entryTypes[$row['entrytype_id']]))
-				$array['entrytype_name'] = $entryTypes[$row['entrytype_id']];
-			$array['publisher_name'] = $row['publisher_name'];
-			$array['journal_name'] = $row['journal_name'];
+				$document['entrytype_name'] = $entryTypes[$row['entrytype_id']];
+			$document['publisher_name'] = $row['publisher_name'];
+			$document['journal_name'] = $row['journal_name'];
 		
-			$array['user_id'] = $row['user_id'];
+			$document['user_id'] = $row['user_id'];
 
 			/*
 			* n:n Relationships
 			*/
-			$array['authors'] = LibPerson::fetchAllAuthorsForDocument($row['id']);
-			$array['editors'] = LibPerson::fetchAllEditorsForDocument($row['id']);
-			$array['tags'] = LibTag::fetchAllForDocument($row['id']);
+			$document['authors'] = LibPerson::fetchAllAuthorsForDocument($row['id']);
+			$document['editors'] = LibPerson::fetchAllEditorsForDocument($row['id']);
+			$document['tags'] = LibTag::fetchAllForDocument($row['id']);
 		}
 		
-		return $array;
+		return $document;
 	}
 	
 	static function save($document){

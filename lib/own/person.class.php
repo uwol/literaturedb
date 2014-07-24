@@ -114,18 +114,24 @@ class LibPerson{
 	}
 
 	static function buildPersonArray($row){
-		$person = array();
-		$person['id'] = $row['id'];
-		$person['person_address'] = self::buildCanonicalPersonAddress($row['id']);
-		$person['firstname'] = $row['firstname'];
-		$person['prefix'] = $row['prefix'];
-		$person['lastname'] = $row['lastname'];
-		$person['suffix'] = $row['suffix'];
-		$person['user_id'] = $row['user_id'];
-		if(isset($row['weight_absolute']))
-			$person['weight_absolute'] = min(10, $row['weight_absolute']);
-		else
-			$person['weight_absolute'] = '';
+		$person = '';
+	
+		if(isset($row['id']) && $row['id'] != ''){
+			$person = array();
+
+			$person['id'] = $row['id'];
+			$person['person_address'] = self::buildCanonicalPersonAddress($row['id']);
+			$person['firstname'] = $row['firstname'];
+			$person['prefix'] = $row['prefix'];
+			$person['lastname'] = $row['lastname'];
+			$person['suffix'] = $row['suffix'];
+			$person['user_id'] = $row['user_id'];
+			if(isset($row['weight_absolute']))
+				$person['weight_absolute'] = min(10, $row['weight_absolute']);
+			else
+				$person['weight_absolute'] = '';
+		}
+			
 		return $person;
 	}
 

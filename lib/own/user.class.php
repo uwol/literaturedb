@@ -95,15 +95,21 @@ class LibUser{
 	}
 	
 	static function buildUserArray($row){
-		$user = array();
-		$user['id'] = $row['id'];
-		$user['firstname'] = $row['firstname'];
-		$user['lastname'] = $row['lastname'];
-		$user['username'] = $row['username'];
-		$user['emailaddress'] = $row['emailaddress'];
-		$user['password_hash'] = $row['password_hash'];
-		$user['is_admin'] = (in_array($row['username'], LibConfig::$admins)) ? 1 : 0;
-		$user['activated'] = ($row['activated'] || $user['is_admin']) ? 1 : 0;
+		$user = '';
+	
+		if(isset($row['id']) && $row['id'] != ''){
+			$user = array();
+		
+			$user['id'] = $row['id'];
+			$user['firstname'] = $row['firstname'];
+			$user['lastname'] = $row['lastname'];
+			$user['username'] = $row['username'];
+			$user['emailaddress'] = $row['emailaddress'];
+			$user['password_hash'] = $row['password_hash'];
+			$user['is_admin'] = (in_array($row['username'], LibConfig::$admins)) ? 1 : 0;
+			$user['activated'] = ($row['activated'] || $user['is_admin']) ? 1 : 0;
+		}
+
 		return $user;
 	}
 	

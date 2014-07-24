@@ -64,15 +64,21 @@ class LibTag{
 	}
 	
 	static function buildTagArray($row){
-		$tag = array();
-		$tag['id'] = $row['id'];
-		$tag['name'] = $row['name'];
-		$tag['user_id'] = $row['user_id'];
-		if(isset($row['weight_absolute']))
-			$tag['weight_absolute'] = ($row['weight_absolute'] > 0) ? min(10, $row['weight_absolute']) : 1;
-		else
-			$tag['weight_absolute'] = '';
-		$tag['tag_address'] = self::buildCanonicalTagAddress($row['id']);
+		$tag = '';
+	
+		if(isset($row['id']) && $row['id'] != ''){
+			$tag = array();
+
+			$tag['id'] = $row['id'];
+			$tag['name'] = $row['name'];
+			$tag['user_id'] = $row['user_id'];
+			if(isset($row['weight_absolute']))
+				$tag['weight_absolute'] = ($row['weight_absolute'] > 0) ? min(10, $row['weight_absolute']) : 1;
+			else
+				$tag['weight_absolute'] = '';
+			$tag['tag_address'] = self::buildCanonicalTagAddress($row['id']);
+		}
+		
 		return $tag;
 	}
 	

@@ -89,13 +89,19 @@ class LibShare{
 		}
 	}
 
-	static function buildShareArray($row){
-		$share = array();
-		$share['id'] = $row['id'];
-		$share['local_user_id'] = $row['local_user_id'];
-		$share['remote_user_address'] = $row['remote_user_address'];
-		$share['following'] = $row['following'];
-		$share['sharing'] = $row['sharing'];
+	static function buildShareArray($row){		
+		$share = '';
+	
+		if(isset($row['id']) && $row['id'] != ''){
+			$share = array();
+
+			$share['id'] = $row['id'];
+			$share['local_user_id'] = $row['local_user_id'];
+			$share['remote_user_address'] = $row['remote_user_address'];
+			$share['following'] = $row['following'];
+			$share['sharing'] = $row['sharing'];
+		}
+
 		return $share;
 	}
 }
