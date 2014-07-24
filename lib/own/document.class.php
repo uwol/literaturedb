@@ -143,59 +143,63 @@ class LibDocument{
 	}
 	
 	static function buildDocumentArray($row){
-		$array = array();
+		$array = '';
+	
+		if(isset($row['id']) && $row['id'] != ''){
+			$array = array();
 		
-		// copy
-		$array['id'] = $row['id'];
-		$array['document_address'] = self::buildCanonicalDocumentAddress($row['id']);
-		$array['hash'] = $row['hash'];
-		$array['entrytype_id'] = $row['entrytype_id'];
-		$array['title'] = $row['title'];		
-		$array['date'] = $row['date'];
-		$array['abstract'] = $row['abstract'];
+			// copy
+			$array['id'] = $row['id'];
+			$array['document_address'] = self::buildCanonicalDocumentAddress($row['id']);
+			$array['hash'] = $row['hash'];
+			$array['entrytype_id'] = $row['entrytype_id'];
+			$array['title'] = $row['title'];		
+			$array['date'] = $row['date'];
+			$array['abstract'] = $row['abstract'];
 
-		$array['address'] = $row['address'];
-		$array['booktitle'] = $row['booktitle'];
-		$array['chapter'] = $row['chapter'];
-		$array['doi'] = $row['doi'];
-		$array['ean'] = $row['ean'];
+			$array['address'] = $row['address'];
+			$array['booktitle'] = $row['booktitle'];
+			$array['chapter'] = $row['chapter'];
+			$array['doi'] = $row['doi'];
+			$array['ean'] = $row['ean'];
 		
-		$array['edition'] = '';
-		if($row['edition'] > 0)
-			$array['edition'] = $row['edition'];	
+			$array['edition'] = '';
+			if($row['edition'] > 0)
+				$array['edition'] = $row['edition'];	
 		
-		$array['institution'] = $row['institution'];
-		$array['journal_id'] = $row['journal_id'];
-		$array['number'] = $row['number'];
-		$array['organization'] = $row['organization'];
-		$array['pages'] = $row['pages'];
-		$array['publisher_id'] = $row['publisher_id'];
-		$array['school'] = $row['school'];
-		$array['series'] = $row['series'];
-		$array['url'] = $row['url'];
-		$array['volume'] = $row['volume'];
-		$array['note'] = $row['note'];
-		$array['rating'] = $row['rating'];
-		$array['filename'] = $row['filename'];
-		$array['extension'] = $row['extension'];
-		$array['filesize'] = $row['filesize'];
-		$array['datetime_created'] = $row['datetime_created'];
+			$array['institution'] = $row['institution'];
+			$array['journal_id'] = $row['journal_id'];
+			$array['number'] = $row['number'];
+			$array['organization'] = $row['organization'];
+			$array['pages'] = $row['pages'];
+			$array['publisher_id'] = $row['publisher_id'];
+			$array['school'] = $row['school'];
+			$array['series'] = $row['series'];
+			$array['url'] = $row['url'];
+			$array['volume'] = $row['volume'];
+			$array['note'] = $row['note'];
+			$array['rating'] = $row['rating'];
+			$array['filename'] = $row['filename'];
+			$array['extension'] = $row['extension'];
+			$array['filesize'] = $row['filesize'];
+			$array['datetime_created'] = $row['datetime_created'];
 		
-		$entryTypes = self::fetchAllEntryTypes();
-		$array['entrytype_name'] = '';
-		if(isset($row['entrytype_id']) && isset($entryTypes[$row['entrytype_id']]))
-			$array['entrytype_name'] = $entryTypes[$row['entrytype_id']];
-		$array['publisher_name'] = $row['publisher_name'];
-		$array['journal_name'] = $row['journal_name'];
+			$entryTypes = self::fetchAllEntryTypes();
+			$array['entrytype_name'] = '';
+			if(isset($row['entrytype_id']) && isset($entryTypes[$row['entrytype_id']]))
+				$array['entrytype_name'] = $entryTypes[$row['entrytype_id']];
+			$array['publisher_name'] = $row['publisher_name'];
+			$array['journal_name'] = $row['journal_name'];
 		
-		$array['user_id'] = $row['user_id'];
+			$array['user_id'] = $row['user_id'];
 
-		/*
-		* n:n Relationships
-		*/
-		$array['authors'] = LibPerson::fetchAllAuthorsForDocument($row['id']);
-		$array['editors'] = LibPerson::fetchAllEditorsForDocument($row['id']);
-		$array['tags'] = LibTag::fetchAllForDocument($row['id']);
+			/*
+			* n:n Relationships
+			*/
+			$array['authors'] = LibPerson::fetchAllAuthorsForDocument($row['id']);
+			$array['editors'] = LibPerson::fetchAllEditorsForDocument($row['id']);
+			$array['tags'] = LibTag::fetchAllForDocument($row['id']);
+		}
 		
 		return $array;
 	}
@@ -284,8 +288,7 @@ class LibDocument{
 			$id = $document['id'];
 		}
 		else{
-			$cmd = sprintf('INSERT IGNORE INTO literaturedb_document (hash, entrytype_id, title, date, abstract, address, booktitle, chapter, doi, ean, edition, institution, journal_id, number, organization, pages, publisher_id, school, series, url, volume, note, rating, filename, extension, filesize, datetime_created, user_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), %s)',
-				LibDb::secInp(trim($document['hash'])),
+			$cmd = sprintf('INSERT IGNORE INTO literaturedb_document (entrytype_id, title, date, abstract, address, booktitle, chapter, doi, ean, edition, institution, journal_id, number, organization, pages, publisher_id, school, series, url, volume, note, rating, datetime_created, user_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), %s)',
 				LibDb::secInp(LibDb::zerofy(trim($document['entrytype_id']))),
 				LibDb::secInp(LibString::cleanBibtexString($document['title'])),
 				LibDb::secInp(trim($document['date'])),
@@ -308,9 +311,6 @@ class LibDocument{
 				LibDb::secInp(LibString::cleanBibtexString($document['volume'])),
 				LibDb::secInp(LibString::cleanBibtexString($document['note'])),
 				LibDb::secInp(LibDb::zerofy(trim($document['rating']))),
-				LibDb::secInp(trim($document['filename'])),
-				LibDb::secInp(trim($document['extension'])),
-				LibDb::secInp(trim($document['filesize'])),
 				LibDb::secInp(trim($document['user_id'])));
 			LibDb::query($cmd);
 
@@ -429,6 +429,26 @@ class LibDocument{
 		LibDocument::deleteOrphans();
 		
 		return $id;
+	}
+	
+	static function saveFileInfo($documentId, $hash, $filename, $extension){
+		$documentId = trim($documentId);
+		$hash = trim($hash);
+		$filename = trim($filename);
+		$extension = trim($extension);
+
+		if($documentId == ''){
+			LibGlobal::$errorTexts[] = 'Could not save file info due to an undefined document id.';
+		}elseif($hash != '' && $filename != ''){
+			$filesize = filesize(LibDocument::getFilePath($hash));
+			$cmd = sprintf('UPDATE literaturedb_document SET hash = %s, filename = %s, extension = %s, filesize = %s WHERE id = %s AND (hash = "" OR hash IS NULL)',
+				LibDb::secInp($hash),
+				LibDb::secInp($filename),
+				LibDb::secInp($extension),
+				LibDb::secInp($filesize),
+				LibDb::secInp($documentId));
+			LibDb::query($cmd);
+		}
 	}
 	
 	static function delete($documentId){

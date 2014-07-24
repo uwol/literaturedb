@@ -56,80 +56,84 @@ if(isset($_REQUEST['mode']))
 
 
 
+
 /*
 * Actions
 */
 
-//adding a file
-if((isset($_POST['action']) && $_POST['action'] == 'document_create') || (isset($_GET['action']) && $_GET['action'] == 'document_copy')){
+// adding a document
+if(isset($_REQUEST['action']) && ($_REQUEST['action'] == 'document_create' || $_REQUEST['action'] == 'document_copy')){
 	$documentAddress = '';
 	if(isset($_GET['documentAddress']))
 		$documentAddress = trim($_GET['documentAddress']);
+		
+	// ---------------------------------------------------
 	
+	/*
+	* copy file contents and determine hash
+	*/
 	$hash = '';
 
-	/*
-	* copy file contents
-	*/
-	if(isset($_FILES['file']['tmp_name']) && $_FILES['file']['tmp_name'] != ''){ //file upload?
-		$hash = sha1_file($_FILES['file']['tmp_name']);
-		
-		if($hash == ''){
-			LibGlobal::$errorTexts[] = 'The hash value is empty although a file has been uploaded.';
-		}
-		elseif(!is_file(LibDocument::getFilePath($hash))){ //file does not exist yet?
-			copy($_FILES['file']['tmp_name'], LibDocument::getFilePath($hash)); //copy the file
-			LibGlobal::$notificationTexts[] = 'The document has been uploaded.';
-		}
-	}
-	elseif($documentAddress != ''){ // copy of already existing file
+	if($documentAddress != ''){
+		// a document/file is copied locally
 		if(LibDocument::isLocalDocumentAddress($documentAddress)){ //local file?
 			$document = LibRouter::document_fetch($documentAddress, $sessionUser->getUserAddress());
 			$hash = $document['hash'];
-			LibGlobal::$notificationTexts[] = 'The document has been copied to your documents.';
 		}
-		else{ //remote file
+		// a document/file is copied from remote
+		else{
 			$hash = sha1(LibRouter::document_fetchFileContents($documentAddress, $sessionUser->getUserAddress()));
-			
 			if(!is_file(LibDocument::getFilePath($hash))){ //file does not exist yet?
 				$handle = fopen(LibDocument::getFilePath($hash), 'w+');
 				fwrite($handle, LibRouter::document_fetchFileContents($documentAddress, $sessionUser->getUserAddress()));
 				fclose($handle);
-				LibGlobal::$notificationTexts[] = 'The document has been copied to your documents.';
 			}
+		}
+	} 
+	// a file could have been uploaded
+	else {
+		$hash = storeAndHashUploadedFile();
+	}
+
+	// ---------------------------------------------------
+	
+	/*
+	* try to identify the document in the user context by the hash -> check, whether the user already owns the file
+	*/
+	$document = LibRouter::document_fetchByHash($hash, $sessionUser->getUserAddress(), $sessionUser->getUserAddress());
+
+	/*
+	* try to identify the document by the document address
+	*/
+	if(!is_array($document)){
+		if($documentAddress != ''){
+			// try to fetch information from the original owner the file was copied from (case 2 or case 3)
+			$document = LibRouter::document_fetch($documentAddress, $sessionUser->getUserAddress());
+			$document['id'] = '';
 		}
 	}
 
 	/*
-	* generate file meta information
+	* try to generate document meta information from an uploaded file
 	*/
-	
-	//check, whether the user already owns the file
-	$document = LibRouter::document_fetchByHash($hash, $sessionUser->getUserAddress(), $sessionUser->getUserAddress());
-
-	//no file found and a copied file?
-	if($documentAddress != '' && (!is_array($document) || !isset($document['id']) || $document['id'] == '')){
-		//try to fetch information from the original owner the file was copied from
-		$document = LibRouter::document_fetch($documentAddress, $sessionUser->getUserAddress());
-	}
-
-	//could no meta information be found for the file?
-	if(!is_array($document) || !isset($document['id']) || $document['id'] == ''){
+	if(!is_array($document)){
 		$document = array();
 
+		// derive document data from the hash
 		if($hash != ''){
 			$document['hash'] = $hash;
-			$document['filesize'] = filesize(LibDocument::getFilePath($hash));
 		}
 
-		if(isset($_FILES['file']['name']) && $_FILES['file']['name'] != ''){
-			$path_parts = pathinfo($_FILES['file']['name']);
-			
-			$document['title'] = $path_parts['filename'];
-			$document['filename'] = $path_parts['filename'];
-			$document['extension'] = $path_parts['extension'];	
+		// derive document data from the uploaded file
+		$pathinfo = getPathinfoOfUploadedFile();		
+		if(is_array($pathinfo)){			
+			$document['title'] = isset($pathinfo['filename']) ? $pathinfo['filename'] : '';
+			$document['filename'] = isset($pathinfo['filename']) ? $pathinfo['filename'] : '';
+			$document['extension'] = isset($pathinfo['extension']) ? $pathinfo['extension'] : '';	
 		}
 	}
+	
+	// ---------------------------------------------------
 
 	/*
 	* set up user ids of document elements
@@ -163,8 +167,14 @@ if((isset($_POST['action']) && $_POST['action'] == 'document_create') || (isset(
 		$document['editors'] = $newEditors;
 	}
 
-	//save the document
+	// ---------------------------------------------------
+
+	//save document
 	$documentAddress = LibDocument::buildCanonicalDocumentAddress(LibRouter::document_save($document, $sessionUser->getUserAddress()));
+		
+	// save file info
+	$documentByAddress = LibRouter::document_fetch($documentAddress, $sessionUser->getUserAddress());
+	LibDocument::saveFileInfo($documentByAddress['id'], $document['hash'], $document['filename'], $document['extension']);
 	
 	$mode = 'edit';
 }
@@ -172,6 +182,7 @@ if((isset($_POST['action']) && $_POST['action'] == 'document_create') || (isset(
 
 if(isset($_POST['action']) && $_POST['action'] == "document_save"){
 	$document = array();
+
 	$document['id'] = $_POST['id'];
 	$document['entrytype_id'] = $_POST['entrytype_id'];
 	$document['title'] = $_POST['title'];
@@ -203,10 +214,40 @@ if(isset($_POST['action']) && $_POST['action'] == "document_save"){
 
 	$document['user_id'] = $sessionUser->id;
 
-	//save
+	//save the document
 	$documentAddress = LibDocument::buildCanonicalDocumentAddress(LibRouter::document_save($document, $sessionUser->getUserAddress()));
-	
+
 	LibGlobal::$notificationTexts[] = 'The document has been saved.';
+	
+	// if no file has been appended to this document, yet
+	if($document['hash'] == ''){
+		$hash = storeAndHashUploadedFile();
+
+		// if a file has been uploaded
+		if($hash != ''){
+			// try to load the document in the user context by the hash -> check, whether the user already owns the file
+			$documentByHash = LibRouter::document_fetchByHash($hash, $sessionUser->getUserAddress(), $sessionUser->getUserAddress());
+
+			// no document data found by hash? -> user does not own this document, yet
+			if(!is_array($documentByHash) || !isset($documentByHash['id']) || $documentByHash['id'] == ''){
+				// derive document data from the uploaded file
+				$pathinfo = getPathinfoOfUploadedFile();		
+				if(is_array($pathinfo)){			
+					$filename = isset($pathinfo['filename']) ? $pathinfo['filename'] : '';
+					$extension = isset($pathinfo['extension']) ? $pathinfo['extension'] : '';
+				
+					// save file info
+					LibDocument::saveFileInfo($document['id'], $hash, $filename, $extension);
+				}
+				else{
+					LibGlobal::$errorTexts[] = 'Could not determine file information of uploaded file.';
+				}
+			}
+			else{
+				LibGlobal::$errorTexts[] = 'The file is already appended to document ' .$documentByHash['title']. '.';
+			}
+		}
+	}
 }
 
 
@@ -339,6 +380,7 @@ if(LibDocument::isValidDocumentAddress($documentAddress)){
 			echo '<tr><td style="width:18%">Word:</td><td>'.LibString::protectXSS(LibDocument::getId_Word2007($document['id'])).'</td></tr>';
 			echo '</table>';			
 		
+			// if the document has a hash, i. e. has a file
 			if($document['hash'] != ''){
 				/*
 				* static file meta infos
@@ -363,7 +405,7 @@ if(LibDocument::isValidDocumentAddress($documentAddress)){
 		else{
 			echo '<h1>Edit document</h1>';
 
-			echo '<form method="post" action="index.php?pid=literaturedb_document">';
+			echo '<form method="post" enctype="multipart/form-data" action="index.php?pid=literaturedb_document">';
 			echo '<fieldset>';
 			if($ownDocument)
 				echo '<input type="submit" value="save" />';
@@ -440,12 +482,18 @@ if(LibDocument::isValidDocumentAddress($documentAddress)){
 			echo '<input type="text" name="rating" value="' .LibString::protectXSS($document['rating']). '" size="1" /> Rating (1-5)';
 
 			echo '<hr />';
-			
 
-			if($ownDocument)
+			if($document['hash'] == '' && $ownDocument){
+				echo '<input name="file" type="file" size="30" /> Append a file (max. ' .calculateMaxFilesize(). ' MB)<br />';
+				echo '<hr />';
+			}
+			
+			if($ownDocument){
 				echo '<input type="submit" value="save" />';
-			else
+			}
+			else{
 				echo '<input type="submit" value="copy" />';
+			}
 		
 			echo '</fieldset>';
 
@@ -467,11 +515,7 @@ else{
 	echo '<fieldset>';
 
 	echo '<p><input type="submit" value="Add a document" /></p>';
-
-	$memoryLimit = (int) substr(ini_get("memory_limit"),0,-1);
-	$maxSize = $memoryLimit / 6;
-
-	echo '<p>Append a file (max. ' .round($maxSize, 0). ' MB): <input name="file" type="file" size="30" /></p>';
+	echo '<p>Append a file (max. ' .calculateMaxFilesize(). ' MB): <input name="file" type="file" size="30" /></p>';
 	
 	echo '<input type="hidden" name="action" value="document_create" />';
 
@@ -479,4 +523,38 @@ else{
 	echo '</form>';
 }
 
+
+// ---------------------------------------------------------------
+
+function calculateMaxFilesize(){
+	$memoryLimit = (int) substr(ini_get("memory_limit"), 0, -1);
+	$maxFilesize = $memoryLimit / 6;
+	return round($maxFilesize, 0);
+}
+
+function storeAndHashUploadedFile(){
+	$hash = '';
+
+	// if a file has been uploaded
+	if(isset($_FILES['file']['tmp_name']) && $_FILES['file']['tmp_name'] != ''){
+		$hash = sha1_file($_FILES['file']['tmp_name']);
+	
+		if($hash == ''){
+			LibGlobal::$errorTexts[] = 'Could not calculate the hash of the uploaded file.';
+		}
+		// file does not exist yet?
+		elseif(!is_file(LibDocument::getFilePath($hash))){
+			//copy the file
+			copy($_FILES['file']['tmp_name'], LibDocument::getFilePath($hash));
+		}
+	}
+
+	return $hash;
+}
+
+function getPathinfoOfUploadedFile(){
+	if(isset($_FILES['file']['name']) && $_FILES['file']['name'] != ''){
+		return pathinfo($_FILES['file']['name']);
+	}
+}
 ?>
