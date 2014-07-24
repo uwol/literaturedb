@@ -71,9 +71,13 @@ class LibString{
 	static function parsePersonNameString($personNameString, $userId){
 		$persons = array();
 		
-		$personNameString = str_replace(',', ' and ', $personNameString);
-		
-		$personNameStrings = explode(' and ', $personNameString);
+		// if the person name string does contain ands, then we assume that ands are used as separators between persons
+		if(strstr($personNameString, ' and ')){
+			$personNameStrings = explode(' and ', $personNameString);		
+		} else {
+			$personNameStrings = explode(',', $personNameString);
+		}
+
 		foreach($personNameStrings as $personNameString){ //for each person
 			$firstnames = array();
 			$prefixes = array();
