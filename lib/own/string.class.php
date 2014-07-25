@@ -148,7 +148,7 @@ class LibString{
 		
 		$tagsClean = array();
 		foreach($tagNamesDirty as $tagNameDirty){
-			$tagNameClean = trim(strtolower(preg_replace("/[^a-zA-Z0-9äöüÄÖÜß!]/", '', $tagNameDirty)));
+			$tagNameClean = trim(strtolower(preg_replace("/[^\p{L}\p{N}]/u", '', $tagNameDirty)));
 
 			if(strlen($tagNameClean) > 0){
 
