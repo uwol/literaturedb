@@ -20,75 +20,42 @@ class LibDb{
 	public static $connection;
 	
 	static function connect(){
-		$portString = '';
+		$mysqlPort = 3306;
 
-		if(LibConfig::$mysqlPort != "")
-			$portString = ":".LibConfig::$mysqlPort;
+		if(LibConfig::$mysqlPort != ""){
+			$mysqlPort = LibConfig::$mysqlPort;
+			
+			if(LibConfig::$mysqlServer == 'localhost'){
+				// required fix due to http://php.net/manual/de/pdo.connections.php
+				LibConfig::$mysqlServer = '127.0.0.1';
+			}
+		}
+		
+		$dsn = sprintf('mysql:host=%s;port=%s;dbname=%s', 
+			LibConfig::$mysqlServer,
+			$mysqlPort,
+			LibConfig::$mysqlDb);
+			
+		$options = array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8");
 
-		self::$connection = mysql_connect(LibConfig::$mysqlServer . $portString, LibConfig::$mysqlUser, LibConfig::$mysqlPass);
-		if (!self::$connection)
-    		die('Error: the connection to the MySQL database could not be established. Probably the MySQL parameters in custom/systemconfig.php are invalid. The error message is: ' . mysql_error());
-		mysql_select_db(LibConfig::$mysqlDb);
-		mysql_query("SET NAMES 'utf8'");
+		try {
+			self::$connection = new PDO($dsn, LibConfig::$mysqlUser, LibConfig::$mysqlPass, $options);
+		} catch (PDOException $e) {
+			die('Error: the connection to the MySQL database could not be established. Probably the MySQL parameters in custom/systemconfig.php are invalid.');
+			// 'The error message is: ' . $e->getMessage()
+		}
+	}
+	
+	static function insertId(){
+		return self::$connection->lastInsertId();
+	}
+	
+	static function prepare($cmd){
+		return self::$connection->prepare($cmd);
 	}
 
 	static function query($cmd){
-		$result=mysql_query($cmd);
-		LibGlobal::$numberOfMysqlQueries++;
-		if (!$result)
-    		echo('SQL query problem: ' . $cmd .' <br /><b>'. mysql_error()."</b><br /><br />");
-		return $result;
-	}
-	
-	static function queryLoudWithoutDie($cmd){
-		$result=mysql_query($cmd);
-		LibGlobal::$numberOfMysqlQueries++;
-		if (!$result)
-    		echo('SQL query problem: ' . $cmd .' <br /><b>'. mysql_error()."</b><br /><br />");
-		return $result;
-	}
-	
-
-	static function queryQuiet($cmd){
-		LibGlobal::$numberOfMysqlQueries++;
-		return @mysql_query($cmd);
-	}
-
-	static function queryAttribute($cmd){
-		$result = self::query($cmd);
-		LibGlobal::$numberOfMysqlQueries++;
-		$row = mysql_fetch_row($result);
- 		$value = $row[0];
- 		return $value;
-	}
-
-	static function queryRow($cmd)	{
-		$result = self::query($cmd);
-		LibGlobal::$numberOfMysqlQueries++;
-		$row = mysql_fetch_row($result);
-		return $row;
-	}
-
-	static function queryArray($cmd){
-		$result = self::query($cmd);
-		LibGlobal::$numberOfMysqlQueries++;
-		$row = mysql_fetch_array($result);
-		return $row;
-	}
-
-	static function quoteSmart($value){
-		if(get_magic_quotes_gpc())
-			$value = stripslashes($value);
-
-		if($value == 'NULL')
-			return 'NULL';
-
-		return "'" . mysql_real_escape_string($value) . "'";
-	}
-
-	static function secInp($value){
-		$value = self::quoteSmart($value);
-		return $value;
+		return self::$connection->query($cmd);
 	}
 	
 	static function zerofy($value){

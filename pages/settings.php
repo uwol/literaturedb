@@ -93,7 +93,7 @@ if(isset($_POST['action']) && $_POST['action'] == 'userDetailsChange'){
 	elseif(!LibUser::isValidEmailAddress($emailAddress))
 		$emailAddressNotValid = true;
 	$user = LibUser::fetchByEmailAddress($emailAddress);
-	if(is_numeric($user['id']) && $user['id'] != $sessionUser->id)
+	if(is_array($user) && isset($user['id']) && is_numeric($user['id']) && $user['id'] != $sessionUser->id)
 		$emailAddressAlreadyUsed = true;
 	//---
 	if($firstname == "")

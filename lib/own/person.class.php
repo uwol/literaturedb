@@ -18,24 +18,24 @@ along with literaturedb. If not, see <http://www.gnu.org/licenses/>.
 
 class LibPerson{
 	static function fetchAllAuthorsForDocument($documentId){
-		$cmd = sprintf('SELECT * FROM literaturedb_asso_document_author, literaturedb_person WHERE literaturedb_asso_document_author.person_id = literaturedb_person.id AND literaturedb_asso_document_author.document_id = %s ORDER BY literaturedb_asso_document_author.position ASC',
-			LibDb::secInp($documentId));
-		
-		$result = LibDb::query($cmd);
+		$stmt = LibDb::prepare('SELECT * FROM literaturedb_asso_document_author, literaturedb_person WHERE literaturedb_asso_document_author.person_id = literaturedb_person.id AND literaturedb_asso_document_author.document_id = :document_id ORDER BY literaturedb_asso_document_author.position ASC');
+		$stmt->bindParam(':document_id', $documentId, PDO::PARAM_INT);
+		$stmt->execute();
+
 		$authors = array();
-		while($row = mysql_fetch_array($result)){
+		while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 			$authors[] = self::buildPersonArray($row);
 		}
 		return $authors;
 	}
 	
 	static function fetchAllEditorsForDocument($documentId){
-		$cmd = sprintf('SELECT * FROM literaturedb_asso_document_editor, literaturedb_person WHERE literaturedb_asso_document_editor.person_id = literaturedb_person.id AND literaturedb_asso_document_editor.document_id = %s ORDER BY literaturedb_asso_document_editor.position ASC',
-			LibDb::secInp($documentId));
+		$stmt = LibDb::prepare('SELECT * FROM literaturedb_asso_document_editor, literaturedb_person WHERE literaturedb_asso_document_editor.person_id = literaturedb_person.id AND literaturedb_asso_document_editor.document_id = :document_id ORDER BY literaturedb_asso_document_editor.position ASC');
+		$stmt->bindParam(':document_id', $documentId, PDO::PARAM_INT);
+		$stmt->execute();
 		
-		$result = LibDb::query($cmd);
 		$editors = array();
-		while($row = mysql_fetch_array($result)){
+		while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 			$editors[] = self::buildPersonArray($row);
 		}
 		return $editors;
@@ -44,18 +44,20 @@ class LibPerson{
 	static function fetchAllAuthors($userId, $offset = 0, $limit = 100){
 		$internalLimit = 100;
 		if(is_numeric($limit) && $limit > 0)
-			$internalLimit = $limit;
+			$internalLimit = (int) $limit;
 
 		$internalOffset = 0;
 		if(is_numeric($offset) && $offset >= 0)
-			$internalOffset = $offset;
+			$internalOffset = (int) $offset;
 		
-		$cmd = sprintf('SELECT COUNT(*) AS weight_absolute, literaturedb_person.id, literaturedb_person.firstname, literaturedb_person.prefix, literaturedb_person.lastname, literaturedb_person.suffix, literaturedb_person.user_id FROM literaturedb_person, literaturedb_asso_document_author, literaturedb_document WHERE literaturedb_document.id = literaturedb_asso_document_author.document_id AND literaturedb_person.id = literaturedb_asso_document_author.person_id AND literaturedb_person.user_id = %s GROUP BY literaturedb_person.id ORDER BY weight_absolute DESC LIMIT '.$internalOffset.','.$internalLimit,
-			LibDb::secInp($userId));
-		$result = LibDb::query($cmd);
+		$stmt = LibDb::prepare('SELECT COUNT(*) AS weight_absolute, literaturedb_person.id, literaturedb_person.firstname, literaturedb_person.prefix, literaturedb_person.lastname, literaturedb_person.suffix, literaturedb_person.user_id FROM literaturedb_person, literaturedb_asso_document_author, literaturedb_document WHERE literaturedb_document.id = literaturedb_asso_document_author.document_id AND literaturedb_person.id = literaturedb_asso_document_author.person_id AND literaturedb_person.user_id = :user_id GROUP BY literaturedb_person.id ORDER BY weight_absolute DESC LIMIT :offset,:limit');
+		$stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+		$stmt->bindParam(':offset', $internalOffset, PDO::PARAM_INT);
+		$stmt->bindParam(':limit', $internalLimit, PDO::PARAM_INT);
+		$stmt->execute();
 		
 		$authors = array();
-		while($row = mysql_fetch_array($result)){
+		while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 			$authors[$row['lastname'].$row['firstname']] = self::buildPersonArray($row);
 		}
 		ksort($authors);
@@ -63,14 +65,17 @@ class LibPerson{
 	}
 	
 	static function fetchNameBeginningWith($beginning, $userId){
-		$cmd = sprintf('SELECT literaturedb_person.id, literaturedb_person.firstname, literaturedb_person.prefix, literaturedb_person.lastname, literaturedb_person.suffix, literaturedb_person.user_id FROM literaturedb_person WHERE user_id = %s AND (lastname LIKE %s OR firstname LIKE %s) ORDER BY lastname, firstname',
-			LibDb::secInp($userId),
-			LibDb::secInp($beginning . '%'),
-			LibDb::secInp($beginning . '%'));
-		$result = LibDb::query($cmd);
+		$likeFirstname = $beginning . '%';
+		$likeLastname = $beginning . '%';
+	
+		$stmt = LibDb::prepare('SELECT literaturedb_person.id, literaturedb_person.firstname, literaturedb_person.prefix, literaturedb_person.lastname, literaturedb_person.suffix, literaturedb_person.user_id FROM literaturedb_person WHERE user_id = :user_id AND (lastname LIKE :lastname OR firstname LIKE :firstname) ORDER BY lastname, firstname');
+		$stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+		$stmt->bindParam(':firstname', $likeFirstname);
+		$stmt->bindParam(':lastname', $likeLastname);
+		$stmt->execute();
 		
 		$persons = array();
-		while($row = mysql_fetch_array($result)){
+		while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 			$persons[$row['lastname'].$row['firstname']] = self::buildPersonArray($row);
 		}
 		return self::addRelativeWeights($persons);
@@ -79,37 +84,47 @@ class LibPerson{
 	//----------------------------------------------------------------------------------------
 	
 	static function fetch($id){
-		$cmd = sprintf('SELECT * FROM literaturedb_person WHERE id = %s',
-			LibDb::secInp($id));
-		$row = LibDb::queryArray($cmd);
+		$stmt = LibDb::prepare('SELECT * FROM literaturedb_person WHERE id = :id');
+		$stmt->bindParam(':id', $id, PDO::PARAM_INT);
+		$stmt->execute();
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+
 		return self::buildPersonArray($row);
 	}
 	
 	static function save($person){
-		$cmd = sprintf('SELECT COUNT(*) FROM literaturedb_person WHERE id = %s',
-			LibDb::secInp($person['id']));
-		$count = LibDb::queryAttribute($cmd);
+		$cleanFirstname = trim($person['firstname']);
+		$cleanPrefix = trim($person['prefix']);
+		$cleanLastname = trim($person['lastname']);
+		$cleanSuffix = trim($person['suffix']);
+
+		$stmt = LibDb::prepare('SELECT COUNT(*) AS number FROM literaturedb_person WHERE id = :id');
+		$stmt->bindParam(':id', $person['id'], PDO::PARAM_INT);
+		$stmt->execute();
+		$stmt->bindColumn('number', $count);
+		$stmt->fetch();
 	
 		if($count > 0){
-			$cmd = sprintf('UPDATE literaturedb_person SET firstname = %s, prefix = %s, lastname = %s, suffix = %s WHERE id = %s',
-				LibDb::secInp(trim($person['firstname'])),
-				LibDb::secInp(trim($person['prefix'])),
-				LibDb::secInp(trim($person['lastname'])),
-				LibDb::secInp(trim($person['suffix'])),
-				LibDb::secInp($person['id']));
-			LibDb::query($cmd);
+			$stmt = LibDb::prepare('UPDATE literaturedb_person SET firstname = :firstname, prefix = :prefix, lastname = :lastname, suffix = :suffix WHERE id = :id');
+			$stmt->bindParam(':firstname', $cleanFirstname);
+			$stmt->bindParam(':prefix', $cleanPrefix);
+			$stmt->bindParam(':lastname', $cleanLastname);
+			$stmt->bindParam(':suffix', $cleanSuffix);
+			$stmt->bindParam(':id', $person['id'], PDO::PARAM_INT);
+			$stmt->execute();
+
 			return $person['id'];
 		}
 		else{
+			$stmt = LibDb::prepare('INSERT INTO literaturedb_person (firstname, prefix, lastname, suffix, user_id) VALUES (:firstname, :prefix, :lastname, :suffix, :user_id)');
+			$stmt->bindParam(':firstname', $cleanFirstname);
+			$stmt->bindParam(':prefix', $cleanPrefix);
+			$stmt->bindParam(':lastname', $cleanLastname);
+			$stmt->bindParam(':suffix', $cleanSuffix);
+			$stmt->bindParam(':id', $person['user_id'], PDO::PARAM_INT);
+			$stmt->execute();
 
-			$cmd = sprintf('INSERT INTO literaturedb_person (firstname, prefix, lastname, suffix, user_id) VALUES (%s, %s, %s, %s, %s)',
-				LibDb::secInp(trim($person['firstname'])),
-				LibDb::secInp(trim($person['prefix'])),
-				LibDb::secInp(trim($person['lastname'])),
-				LibDb::secInp(trim($person['suffix'])),
-				LibDb::secInp(trim($person['user_id'])));
-			LibDb::query($cmd);
-			return mysql_insert_id();
+			return LibDb::insertId();
 		}
 	}
 
@@ -126,6 +141,7 @@ class LibPerson{
 			$person['lastname'] = $row['lastname'];
 			$person['suffix'] = $row['suffix'];
 			$person['user_id'] = $row['user_id'];
+
 			if(isset($row['weight_absolute']))
 				$person['weight_absolute'] = min(10, $row['weight_absolute']);
 			else

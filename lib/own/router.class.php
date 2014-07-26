@@ -330,7 +330,9 @@ class LibRouter{
 		$documentInDb = LibDocument::fetch($document['id']);
 		$askingUser = LibUser::fetchByUserAddress($askingUserAddress);
 
-		if($documentInDb['id'] == '' || $documentInDb['user_id'] == $askingUser['id']) //new document or document owned by this user?
+		//new document or document owned by this user?
+		if(!is_array($documentInDb) || !isset($documentInDb['id']) || $documentInDb['id'] == '' 
+				|| $documentInDb['user_id'] == $askingUser['id'])
 			return true;
 		return false;
 	}
@@ -663,12 +665,12 @@ class LibRouter{
 		
 		$askedUser = LibUser::fetchByUserAddress($askedUserAddress);
 		$share = LibShare::fetchByLocalUserIdAndRemoteUserAddress($askedUser['id'], $askingUserAddress);
-		if($share['sharing'] == 1)
+		if(is_array($share) && isset($share['sharing']) && $share['sharing'] == 1)
 			return true;
 		return false;
 	}
 	
-	function downloadContent($url){
+	static function downloadContent($url){
 		if(ini_get('allow_url_fopen')){
 			return file_get_contents($url);
 		}

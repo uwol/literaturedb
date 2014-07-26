@@ -129,14 +129,15 @@ class LibString{
 			}
 			
 			$person = array();
-			$person['lastname'] = trim(implode(' ', $lastnames));
 			$person['firstname'] = trim(implode(' ', $firstnames));
 			$person['prefix'] = trim(implode(' ', $prefixes));
+			$person['lastname'] = trim(implode(' ', $lastnames));
+			$person['suffix'] = '';
 			$person['user_id'] = $userId;
-
 			
-			if($person['lastname'] != '')
+			if($person['lastname'] != ''){
 				$persons[] = $person;
+			}
 		}
 		
 		return $persons;

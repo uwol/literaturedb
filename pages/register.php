@@ -73,7 +73,7 @@ if(isset($_POST['action']) && $_POST['action'] == 'register'){
 	elseif(!LibUser::isValidUsername($username))
 		$usernameNotValid = true;
 	$user = LibUser::fetchByUserAddress($username);
-	if(is_numeric($user['id']))
+	if(isset($user['id']) && is_numeric($user['id']))
 		$usernameAlreadyUsed = true;
 	//---
 	if($emailAddress == "")
@@ -81,7 +81,7 @@ if(isset($_POST['action']) && $_POST['action'] == 'register'){
 	elseif(!LibUser::isValidemailAddress($emailAddress))
 		$emailAddressNotValid = true;
 	$user = LibUser::fetchByemailAddress($emailAddress);
-	if(is_numeric($user['id']))
+	if(isset($user['id']) && is_numeric($user['id']))
 		$emailAddressAlreadyUsed = true;
 	//---
 	if($firstname == "")

@@ -20,46 +20,51 @@ class LibTag{
 	static function fetchAll($userId, $offset = 0, $limit = 100){
 		$internalLimit = 100;
 		if(is_numeric($limit) && $limit > 0)
-			$internalLimit = $limit;
+			$internalLimit = (int) $limit;
 
 		$internalOffset = 0;
 		if(is_numeric($offset) && $offset >= 0)
-			$internalOffset = $offset;
+			$internalOffset = (int) $offset;
 		
-		$cmd = sprintf('SELECT COUNT(name) AS weight_absolute, literaturedb_tag.name, literaturedb_tag.id, literaturedb_tag.user_id FROM literaturedb_tag, literaturedb_asso_document_tag, literaturedb_document WHERE literaturedb_asso_document_tag.document_id = literaturedb_document.id AND literaturedb_asso_document_tag.tag_id = literaturedb_tag.id AND literaturedb_tag.user_id = %s GROUP BY literaturedb_tag.name ORDER BY weight_absolute DESC LIMIT '.$internalOffset.','.$internalLimit,
-			LibDb::secInp($userId));
+		$stmt = LibDb::prepare('SELECT COUNT(name) AS weight_absolute, literaturedb_tag.name, literaturedb_tag.id, literaturedb_tag.user_id FROM literaturedb_tag, literaturedb_asso_document_tag, literaturedb_document WHERE literaturedb_asso_document_tag.document_id = literaturedb_document.id AND literaturedb_asso_document_tag.tag_id = literaturedb_tag.id AND literaturedb_tag.user_id = :user_id GROUP BY literaturedb_tag.name ORDER BY weight_absolute DESC LIMIT :offset,:limit');
+		$stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+		$stmt->bindParam(':offset', $internalOffset, PDO::PARAM_INT);
+		$stmt->bindParam(':limit', $internalLimit, PDO::PARAM_INT);
+		$stmt->execute();
 
-		$result = LibDb::query($cmd);
 		$tags = array();
-		while($row = mysql_fetch_array($result))
-
+		while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 			$tags[$row['name']] = self::buildTagArray($row);
+		}
+		
 		ksort($tags);
 		return self::addRelativeWeights($tags);
 	}
 	
 	static function fetchNameBeginningWith($beginning, $userId){
-		$cmd = sprintf('SELECT COUNT(name) AS weight_absolute, literaturedb_tag.name, literaturedb_tag.id, literaturedb_tag.user_id FROM literaturedb_tag, literaturedb_asso_document_tag, literaturedb_document WHERE literaturedb_asso_document_tag.document_id = literaturedb_document.id AND literaturedb_asso_document_tag.tag_id = literaturedb_tag.id AND literaturedb_tag.user_id = %s AND literaturedb_tag.name LIKE %s GROUP BY literaturedb_tag.name ORDER BY literaturedb_tag.name',
-			LibDb::secInp($userId),
-			LibDb::secInp($beginning . '%'));
+		$likeTag = $beginning . '%';
+	
+		$stmt = LibDb::prepare('SELECT COUNT(name) AS weight_absolute, literaturedb_tag.name, literaturedb_tag.id, literaturedb_tag.user_id FROM literaturedb_tag, literaturedb_asso_document_tag, literaturedb_document WHERE literaturedb_asso_document_tag.document_id = literaturedb_document.id AND literaturedb_asso_document_tag.tag_id = literaturedb_tag.id AND literaturedb_tag.user_id = :user_id AND literaturedb_tag.name LIKE :tag GROUP BY literaturedb_tag.name ORDER BY literaturedb_tag.name');
+		$stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+		$stmt->bindParam(':tag', $likeTag);
+		$stmt->execute();
 
-		$result = LibDb::query($cmd);
 		$tags = array();
-		while($row = mysql_fetch_array($result))
-
+		while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 			$tags[$row['name']] = self::buildTagArray($row);
+		}
 		return self::addRelativeWeights($tags);
 	}
 	
 	static function fetchAllForDocument($documentId){
-		$cmd = sprintf('SELECT literaturedb_tag.name, literaturedb_tag.id, literaturedb_tag.user_id FROM literaturedb_tag, literaturedb_asso_document_tag WHERE literaturedb_asso_document_tag.tag_id = literaturedb_tag.id AND literaturedb_asso_document_tag.document_id = %s ORDER BY literaturedb_tag.name',
-			LibDb::secInp($documentId));
-
-		$result = LibDb::query($cmd);
+		$stmt = LibDb::prepare('SELECT literaturedb_tag.name, literaturedb_tag.id, literaturedb_tag.user_id FROM literaturedb_tag, literaturedb_asso_document_tag WHERE literaturedb_asso_document_tag.tag_id = literaturedb_tag.id AND literaturedb_asso_document_tag.document_id = :document_id ORDER BY literaturedb_tag.name');
+		$stmt->bindParam(':document_id', $documentId, PDO::PARAM_INT);
+		$stmt->execute();
+		
 		$tags = array();
-		while($row = mysql_fetch_array($result))
-
+		while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 			$tags[$row['name']] = self::buildTagArray($row);
+		}
 		return self::addRelativeWeights($tags);
 	}
 	
@@ -141,8 +146,10 @@ class LibTag{
 	
 	static function isOwnTag($tag){
 		global $sessionUser;
-		if(LibTag::isLocalTagAddress($tag['tag_address']) && $tag['user_id'] == $sessionUser->id)
+		
+		if(LibTag::isLocalTagAddress($tag['tag_address']) && $tag['user_id'] == $sessionUser->id){
 			return true;
+		}
 		return false;
 	}
 }

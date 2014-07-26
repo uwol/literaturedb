@@ -18,74 +18,89 @@ along with literaturedb. If not, see <http://www.gnu.org/licenses/>.
 
 class LibShare{
 	static function fetchAllByLocalUserId($localUserId){
-		$cmd = sprintf('SELECT * FROM literaturedb_sys_share WHERE local_user_id = %s',
-			LibDb::secInp($localUserId));
-		$result = LibDb::query($cmd);
+		$stmt = LibDb::prepare('SELECT * FROM literaturedb_sys_share WHERE local_user_id = :local_user_id');
+		$stmt->bindParam(':local_user_id', $localUserId, PDO::PARAM_INT);
+		$stmt->execute();
 
 		$shares = array();
-		while($row = mysql_fetch_array($result))
+		while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 			$shares[$row['remote_user_address']] = self::buildShareArray($row);
+		}
 		return $shares;
 	}
 	
 	static function fetchAllFollowedByLocalUserId($localUserId){
-		$cmd = sprintf('SELECT * FROM literaturedb_sys_share WHERE following = 1 AND local_user_id = %s',
-			LibDb::secInp($localUserId));
-		$result = LibDb::query($cmd);
+		$stmt = LibDb::prepare('SELECT * FROM literaturedb_sys_share WHERE following = 1 AND local_user_id = :local_user_id');
+		$stmt->bindParam(':local_user_id', $localUserId, PDO::PARAM_INT);
+		$stmt->execute();
 
 		$shares = array();
-		while($row = mysql_fetch_array($result))
+		while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 			$shares[$row['remote_user_address']] = self::buildShareArray($row);
+		}
 		return $shares;
 	}
 	
 	static function fetch($id){
-		$cmd = sprintf('SELECT * FROM literaturedb_sys_share WHERE id = %s',
-			LibDb::secInp($id));
-		$row = LibDb::queryArray($cmd);
+		$stmt = LibDb::prepare('SELECT * FROM literaturedb_sys_share WHERE id = :id');
+		$stmt->bindParam(':id', $id, PDO::PARAM_INT);
+		$stmt->execute();
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+
 		return self::buildShareArray($row);
 	}
 	
 	static function fetchByLocalUserIdAndRemoteUserAddress($localUserId, $remoteUserAddress){
-		$cmd = sprintf('SELECT * FROM literaturedb_sys_share WHERE local_user_id = %s AND (remote_user_address = %s OR remote_user_address = %s)',
-			LibDb::secInp($localUserId),
-			LibDb::secInp(LibUser::buildMinimalUserAddress($remoteUserAddress)),
-			LibDb::secInp($remoteUserAddress));
-		$row = LibDb::queryArray($cmd);
+		$minimalRemoteUserAddress = LibUser::buildMinimalUserAddress($remoteUserAddress);
+	
+		$stmt = LibDb::prepare('SELECT * FROM literaturedb_sys_share WHERE local_user_id = :local_user_id AND (remote_user_address = :minimal_remote_user_address OR remote_user_address = :remote_user_address)');
+		$stmt->bindParam(':local_user_id', $localUserId, PDO::PARAM_INT);
+		$stmt->bindParam(':minimal_remote_user_address', $minimalRemoteUserAddress);
+		$stmt->bindParam(':remote_user_address', $remoteUserAddress);
+		$stmt->execute();
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+
 		return self::buildShareArray($row);
 	}
 	
 	static function delete($subscriptionId){
-		$cmd = sprintf('DELETE FROM literaturedb_sys_share WHERE id = %s',
-			LibDb::SecInp($subscriptionId));
-		LibDb::query($cmd);
+		$stmt = LibDb::prepare('DELETE FROM literaturedb_sys_share WHERE id = :id');
+		$stmt->bindParam(':id', $subscriptionId, PDO::PARAM_INT);
+		$stmt->execute();
 	}
 
 	static function save($share){
-		$cmd = sprintf('SELECT COUNT(*) FROM literaturedb_sys_share WHERE local_user_id = %s AND remote_user_address = %s',
-			LibDb::secInp(trim($share['local_user_id'])),
-			LibDb::secInp(trim($share['remote_user_address'])));
-		$count = LibDb::queryAttribute($cmd);
+		$cleanLocalUserId = trim($share['local_user_id']);
+		$cleanRemoteUserAddress = trim($share['remote_user_address']);
+		$cleanFollowing = trim($share['following']);
+		$cleanSharing = trim($share['sharing']);
+	
+		$stmt = LibDb::prepare('SELECT COUNT(*) AS number FROM literaturedb_sys_share WHERE local_user_id = :local_user_id AND remote_user_address = :remote_user_address');
+		$stmt->bindParam(':local_user_id', $cleanLocalUserId, PDO::PARAM_INT);
+		$stmt->bindParam(':remote_user_address', $cleanRemoteUserAddress);
+		$stmt->execute();
+		$stmt->bindColumn('number', $count);
+		$stmt->fetch();
 
 		if($count > 0){
-			$cmd = sprintf('UPDATE literaturedb_sys_share SET following = %s, sharing = %s WHERE local_user_id = %s AND remote_user_address = %s',
-				LibDb::secInp(trim($share['following'])),
-				LibDb::secInp(trim($share['sharing'])),
-				LibDb::secInp(trim($share['local_user_id'])),
-				LibDb::secInp(trim($share['remote_user_address'])));
-			LibDb::query($cmd);
+			$stmt = LibDb::prepare('UPDATE literaturedb_sys_share SET following = :following, sharing = :sharing WHERE local_user_id = :local_user_id AND remote_user_address = :remote_user_address');
+			$stmt->bindParam(':local_user_id', $cleanLocalUserId, PDO::PARAM_INT);
+			$stmt->bindParam(':remote_user_address', $cleanRemoteUserAddress);
+			$stmt->bindParam(':following', $cleanFollowing, PDO::PARAM_BOOL);
+			$stmt->bindParam(':sharing', $cleanSharing, PDO::PARAM_BOOL);
+			$stmt->execute();
 
 			$id = $share['id'];
 		}
 		else{
-			$cmd = sprintf('INSERT INTO literaturedb_sys_share (local_user_id, remote_user_address, following, sharing) VALUES (%s, %s, %s, %s)',
-				LibDb::secInp(trim($share['local_user_id'])),
-				LibDb::secInp(trim($share['remote_user_address'])),
-				LibDb::secInp(trim($share['following'])),
-				LibDb::secInp(trim($share['sharing'])));
-			LibDb::query($cmd);
+			$stmt = LibDb::prepare('INSERT INTO literaturedb_sys_share (local_user_id, remote_user_address, following, sharing) VALUES (:local_user_id, :remote_user_address, :following, :sharing)');
+			$stmt->bindParam(':local_user_id', $cleanLocalUserId, PDO::PARAM_INT);
+			$stmt->bindParam(':remote_user_address', $cleanRemoteUserAddress);
+			$stmt->bindParam(':following', $cleanFollowing, PDO::PARAM_BOOL);
+			$stmt->bindParam(':sharing', $cleanSharing, PDO::PARAM_BOOL);
+			$stmt->execute();
 	
-			return mysql_insert_id();
+			return LibDb::insertId();
 		}
 	}
 

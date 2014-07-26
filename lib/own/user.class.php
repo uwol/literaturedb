@@ -28,50 +28,59 @@ class LibUser{
 
 
 	static function fetchAll(){
-		$cmd = sprintf('SELECT * FROM literaturedb_sys_user ORDER BY username');
-		$result = LibDb::query($cmd);
+		$stmt = LibDb::prepare('SELECT * FROM literaturedb_sys_user ORDER BY username');
+		$stmt->execute();
 		
 		$users = array();
-		while($row = mysql_fetch_array($result))
+		while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 			$users[] = self::buildUserArray($row);
+		}
 		return $users;
 	}
 	
 	static function fetchAllActivated(){
-		$cmd = sprintf('SELECT * FROM literaturedb_sys_user WHERE activated = 1 ORDER BY username');
-		$result = LibDb::query($cmd);
+		$stmt = LibDb::prepare('SELECT * FROM literaturedb_sys_user WHERE activated = 1 ORDER BY username');
+		$stmt->execute();
 		
 		$users = array();
-		while($row = mysql_fetch_array($result))
+		while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 			$users[] = self::buildUserArray($row);
+		}
 		return $users;
 	}
 	
 	static function fetchAllOrderByActivated(){
-		$cmd = sprintf('SELECT * FROM literaturedb_sys_user ORDER BY activated, username');
-		$result = LibDb::query($cmd);
+		$stmt = LibDb::prepare('SELECT * FROM literaturedb_sys_user ORDER BY activated, username');
+		$stmt->execute();
 		
 		$users = array();
-		while($row = mysql_fetch_array($result))
+		while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 			$users[] = self::buildUserArray($row);
+		}
 		return $users;
 	}
 	
 	static function fetchAllActivatedContaining($name){
-		$cmd = sprintf('SELECT * FROM literaturedb_sys_user WHERE activated = 1 AND (firstname LIKE %s OR lastname LIKE %s OR username LIKE %s OR emailaddress LIKE %s) LIMIT 0,50',
-			LibDb::secInp("%".$name."%"), LibDb::secInp("%".$name."%"), LibDb::secInp("%".$name."%"), LibDb::secInp("%".$name."%"));
-		$result = LibDb::query($cmd);
+		$stmt = LibDb::prepare('SELECT * FROM literaturedb_sys_user WHERE activated = 1 AND (firstname LIKE :firstname OR lastname LIKE :lastname OR username LIKE :username OR emailaddress LIKE :emailaddress) LIMIT 0,50');
+		$stmt->bindParam(':firstname', '%'.$name.'%');
+		$stmt->bindParam(':lastname', '%'.$name.'%');
+		$stmt->bindParam(':username', '%'.$name.'%');
+		$stmt->bindParam(':emailaddress', '%'.$name.'%');
+		$stmt->execute();
 		
 		$users = array();
-		while($row = mysql_fetch_array($result))
+		while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 			$users[] = self::buildUserArray($row);
+		}
 		return $users;
 	}
 	
 	static function fetch($id){
-		$cmd = sprintf('SELECT * FROM literaturedb_sys_user WHERE id = %s',
-			LibDb::secInp($id));
-		$row = LibDb::queryArray($cmd);
+		$stmt = LibDb::prepare('SELECT * FROM literaturedb_sys_user WHERE id = :id');
+		$stmt->bindParam(':id', $id, PDO::PARAM_INT);
+		$stmt->execute();
+		
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 		return self::buildUserArray($row);
 	}
 	
@@ -80,17 +89,22 @@ class LibUser{
 		
 		if(self::isLocalUserAddress($userAddress)){
 			$username = self::getLocalPart($userAddress);
-			$cmd = sprintf('SELECT * FROM literaturedb_sys_user WHERE username = %s',
-				LibDb::secInp($username));
-			$row = LibDb::queryArray($cmd);
+			
+			$stmt = LibDb::prepare('SELECT * FROM literaturedb_sys_user WHERE username = :username');
+			$stmt->bindParam(':username', $username);
+			$stmt->execute();
+
+			$row = $stmt->fetch(PDO::FETCH_ASSOC);
 			return self::buildUserArray($row);
 		}
 	}
 	
 	static function fetchByEmailAddress($emailAddress){
-		$cmd = sprintf('SELECT * FROM literaturedb_sys_user WHERE emailaddress = %s',
-			LibDb::secInp($emailAddress));
-		$row = LibDb::queryArray($cmd);
+		$stmt = LibDb::prepare('SELECT * FROM literaturedb_sys_user WHERE emailaddress = :emailaddress');
+		$stmt->bindParam(':emailaddress', $emailAddress);
+		$stmt->execute();
+		
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 		return self::buildUserArray($row);
 	}
 	
@@ -118,48 +132,58 @@ class LibUser{
 	static function save($user){
 		if(!isset($user['id']))
 			$user['id'] = '';
-		
-		$cmd = sprintf('SELECT COUNT(*) FROM literaturedb_sys_user WHERE id = %s',
-			LibDb::secInp($user['id']));
-		$count = LibDb::queryAttribute($cmd);
+
+		$cleanFirstname = trim($user['firstname']);
+		$cleanLastname = trim($user['lastname']);
+		$cleanUsername = trim($user['username']);
+		$cleanEmailAddress = trim($user['emailaddress']);
+		$cleanPasswordHash = trim($user['password_hash']);
+		$cleanActivated = trim($user['activated']);
+
+		$stmt = LibDb::prepare('SELECT COUNT(*) AS number FROM literaturedb_sys_user WHERE id = :id');
+		$stmt->bindParam(':id', $user['id'], PDO::PARAM_INT);
+		$stmt->execute();
+		$stmt->bindColumn('number', $count);
+		$stmt->fetch();
 		
 		if($count > 0){
-			$cmd = sprintf('UPDATE literaturedb_sys_user SET firstname = %s, lastname = %s, username = %s, emailaddress = %s, password_hash = %s, activated = %s WHERE id = %s',
-				LibDb::secInp(trim($user['firstname'])),
-				LibDb::secInp(trim($user['lastname'])),
-				LibDb::secInp(trim($user['username'])),
-				LibDb::secInp(trim($user['emailaddress'])),
-				LibDb::secInp(trim($user['password_hash'])),
-				LibDb::secInp(trim($user['activated'])),
-				LibDb::secInp($user['id']));
-			LibDb::query($cmd);
+			$stmt = LibDb::prepare('UPDATE literaturedb_sys_user SET firstname = :firstname, lastname = :lastname, username = :username, emailaddress = :emailaddress, password_hash = :password_hash, activated = :activated WHERE id = :id');
+			$stmt->bindParam(':firstname', $cleanFirstname);
+			$stmt->bindParam(':lastname', $cleanLastname);
+			$stmt->bindParam(':username', $cleanUsername);
+			$stmt->bindParam(':emailaddress', $cleanEmailAddress);
+			$stmt->bindParam(':password_hash', $cleanPasswordHash);
+			$stmt->bindParam(':activated', $cleanActivated, PDO::PARAM_BOOL);
+			$stmt->bindParam(':id', $user['id'], PDO::PARAM_INT);
+			$stmt->execute();
 			
 			return $user['id'];
 		}
 		else{
-			$cmd = sprintf('INSERT INTO literaturedb_sys_user (firstname, lastname, username, emailaddress, password_hash, activated) VALUES (%s, %s, %s, %s, %s, %s)',
-				LibDb::secInp(trim($user['firstname'])),
-				LibDb::secInp(trim($user['lastname'])),
-				LibDb::secInp(trim($user['username'])),
-				LibDb::secInp(trim($user['emailaddress'])),
-				LibDb::secInp(trim($user['password_hash'])),
-				LibDb::secInp(trim($user['activated'])));
-			LibDb::query($cmd);
+			$stmt = LibDb::prepare('INSERT INTO literaturedb_sys_user (firstname, lastname, username, emailaddress, password_hash, activated) VALUES (:firstname, :lastname, :username, :emailaddress, :password_hash, :activated)');
+			$stmt->bindParam(':firstname', $cleanFirstname);
+			$stmt->bindParam(':lastname', $cleanLastname);
+			$stmt->bindParam(':username', $cleanUsername);
+			$stmt->bindParam(':emailaddress', $cleanEmailAddress);
+			$stmt->bindParam(':password_hash', $cleanPasswordHash);
+			$stmt->bindParam(':activated', $cleanActivated, PDO::PARAM_BOOL);
+			$stmt->execute();
 	
-			return mysql_insert_id();
+			return LibDb::insertId();
 		}
 	}
 	
 	static function delete($userId){
 		$documents = LibDocument::fetchAll($userId);
-		foreach($documents as $document)
+		foreach($documents as $document){
 			LibDocument::delete($document['id']);
+		}
 		
 		LibCronjobs::cleanDb();
 		
-		$cmd = sprintf('DELETE FROM literaturedb_sys_user WHERE id = %s',
-			LibDb::secInp($userId));
-		LibDb::query($cmd);
+		$stmt = LibDb::prepare('DELETE FROM literaturedb_sys_user WHERE id = :id');
+		$stmt->bindParam(':id', $userId, PDO::PARAM_INT);
+		$stmt->execute();
 	}
 	
 	/*
@@ -376,14 +400,15 @@ class LibUser{
 			return false;
 		}
 		
-		$cmd = sprintf("SELECT * FROM literaturedb_sys_user WHERE username = %s",
-			LibDb::secInp($username));
-		$row = LibDb::queryArray($cmd);
+		$stmt = LibDb::prepare("SELECT * FROM literaturedb_sys_user WHERE username = :username");
+		$stmt->bindParam(':username', $username);
+		$stmt->execute();
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+
 		$user = self::buildUserArray($row);
 		
-		
 		//3. no user account found for username?
-		if(!is_numeric($user['id']) || !($user['id'] > 0)){
+		if(!is_array($user) || !isset($user['id']) || !is_numeric($user['id']) || !($user['id'] > 0)){
 			//ungenaue Fehlermeldung ausgeben gegen Hacks!
 			LibGlobal::$errorTexts[] = 'The username or password is wrong.';
 			return false;
@@ -402,9 +427,11 @@ class LibUser{
 		}
 		
 		//6. too many login tries
-		$cmd = sprintf("SELECT COUNT(*) FROM literaturedb_sys_event WHERE user_id = %s AND type = 2 AND DATEDIFF(NOW(), date) = 0",
-			LibDb::secInp($user['id']));
-		$numberOfMistakenLoginsToday = LibDb::queryAttribute($cmd);
+		$stmt = LibDb::prepare("SELECT COUNT(*) AS number FROM literaturedb_sys_event WHERE user_id = :user_id AND type = 2 AND DATEDIFF(NOW(), date) = 0");
+		$stmt->bindParam(':user_id', $user['id'], PDO::PARAM_INT);
+		$stmt->execute();
+		$stmt->bindColumn('number', $numberOfMistakenLoginsToday);
+		$stmt->fetch();
 		
 		if($numberOfMistakenLoginsToday > 20){
 			LibGlobal::$errorTexts[] = "This account is blocked for today due to mistaken login attempts.";
@@ -423,24 +450,19 @@ class LibUser{
 			$this->emailAddress = $user['emailaddress'];
 			$this->activated = $user['activated'];
 			
-			/* Do not save successful login here, because all REST calls would be saved
-			//b. log login
-			$cmd = sprintf("INSERT INTO literaturedb_sys_event (user_id,type,date,ipaddress) VALUES (%s,%s,NOW(),%s)",
-				LibDb::secInp($user['id']),
-				LibDb::secInp(1),
-				LibDb::secInp($_SERVER['REMOTE_ADDR']));
-			LibDb::query($cmd);
-			*/	
+			// Do not log successful login here, because all REST calls would be logged
 
 			return true;
 		}
 		
 		//8. log mistaken login
-		$cmd = sprintf("INSERT INTO literaturedb_sys_event (user_id, type, date, ipaddress) VALUES (%s, %s, NOW(), %s)",
-			LibDb::secInp($user['id']),
-			LibDb::secInp(2),
-			LibDb::secInp($_SERVER['REMOTE_ADDR']));
-		LibDb::query($cmd);
+		$errorType = 2;
+		
+		$stmt = LibDb::prepare("INSERT INTO literaturedb_sys_event (user_id, type, date, ipaddress) VALUES (:user_id, :type, NOW(), :ipaddress)");
+		$stmt->bindParam(':user_id', $user['id'], PDO::PARAM_INT);
+		$stmt->bindParam(':type', $errorType, PDO::PARAM_INT);
+		$stmt->bindParam(':ipaddress', $_SERVER['REMOTE_ADDR']);
+		$stmt->execute();
 	
 		LibGlobal::$errorTexts[] = "The username or password is wrong.";
 		return false;

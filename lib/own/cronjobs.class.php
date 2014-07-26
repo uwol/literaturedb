@@ -55,14 +55,9 @@ class LibCronjobs{
     }
     
     static function cleanDb(){
-		$cmd = 'DELETE FROM literaturedb_sys_share WHERE local_user_id NOT IN (SELECT id FROM literaturedb_sys_user)';
-		LibDb::query($cmd);
-		
-		$cmd = 'DELETE FROM literaturedb_sys_event WHERE user_id NOT IN (SELECT id FROM literaturedb_sys_user)';
-		LibDb::query($cmd);
-		
-		$cmd = 'DELETE FROM literaturedb_sys_event WHERE DATEDIFF(NOW(),date) > 30';
-		LibDb::query($cmd);
+		LibDb::query('DELETE FROM literaturedb_sys_share WHERE local_user_id NOT IN (SELECT id FROM literaturedb_sys_user)');
+		LibDb::query('DELETE FROM literaturedb_sys_event WHERE user_id NOT IN (SELECT id FROM literaturedb_sys_user)');
+		LibDb::query('DELETE FROM literaturedb_sys_event WHERE DATEDIFF(NOW(),date) > 30');
 	}
 }
 ?>

@@ -171,7 +171,7 @@ if(isset($_REQUEST['action']) && ($_REQUEST['action'] == 'document_create' || $_
 
 	//save document
 	$documentAddress = LibDocument::buildCanonicalDocumentAddress(LibRouter::document_save($document, $sessionUser->getUserAddress()));
-		
+
 	// save file info
 	$documentByAddress = LibRouter::document_fetch($documentAddress, $sessionUser->getUserAddress());
 	LibDocument::saveFileInfo($documentByAddress['id'], $document['hash'], $document['filename'], $document['extension']);

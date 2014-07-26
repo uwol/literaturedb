@@ -20,112 +20,157 @@ class LibDocument{
 	private static $fields = array('id', 'hash', 'entrytype_id', 'title', 'date', 'abstract', 'address', 'booktitle', 'chapter', 'doi', 'ean', 'edition', 'institution', 'journal_id', 'number', 'organization', 'pages', 'publisher_id', 'school', 'series', 'url', 'volume', 'note', 'rating', 'filename', 'extension', 'filesize', 'datetime_created', 'user_id');
 	
 	static function fetchAll($userId){
-		$cmd = sprintf('SELECT id FROM literaturedb_document WHERE user_id = %s ORDER BY id',
-			LibDb::secInp($userId));
-		$result = LibDb::query($cmd);
+		$stmt = LibDb::prepare('SELECT id FROM literaturedb_document WHERE user_id = :user_id ORDER BY id');
+		$stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+		$stmt->execute();
+		$stmt->bindColumn('id', $rowId);
 		
 		$documents = array();
-		while($row = mysql_fetch_array($result))
-			$documents[] = self::fetch($row['id']);
+		while($stmt->fetch()){
+			$documents[] = self::fetch($rowId);
+		}		
 		return $documents;
 	}
 	
 	static function fetchLast($userId, $offset = 0, $limit = 3){
 		$internalLimit = 3;
 		if(is_numeric($limit) && $limit > 0)
-			$internalLimit = $limit;
+			$internalLimit = (int) $limit;
 
 		$internalOffset = 0;
 		if(is_numeric($offset) && $offset >= 0)
-			$internalOffset = $offset;
+			$internalOffset = (int) $offset;
 		
-		$cmd = sprintf('SELECT id FROM literaturedb_document WHERE user_id = %s ORDER BY datetime_created DESC LIMIT '.$internalOffset.','.$internalLimit,
-			LibDb::secInp($userId));
-		$result = LibDb::query($cmd);
+		$stmt = LibDb::prepare('SELECT id FROM literaturedb_document WHERE user_id = :user_id ORDER BY datetime_created DESC LIMIT :offset,:limit');
+		$stmt->bindParam(':user_id', $userId);
+		$stmt->bindParam(':offset', $internalOffset, PDO::PARAM_INT);
+		$stmt->bindParam(':limit', $internalLimit, PDO::PARAM_INT);		
+		$stmt->execute();
+		$stmt->bindColumn('id', $rowId);
 		
 		$documents = array();
-		while($row = mysql_fetch_array($result))
-			$documents[] = self::fetch($row['id']);
+		while($stmt->fetch()){
+			$documents[] = self::fetch($rowId);
+		}		
 		return $documents;
 	}
 	
 	static function fetchWithoutTag($userId){
-		$cmd = sprintf('SELECT id FROM literaturedb_document WHERE user_id = %s AND literaturedb_document.id NOT IN (SELECT literaturedb_asso_document_tag.document_id FROM literaturedb_asso_document_tag)',
-			LibDb::secInp($userId));
-		$result = LibDb::query($cmd);
+		$stmt = LibDb::prepare('SELECT id FROM literaturedb_document WHERE user_id = :user_id AND literaturedb_document.id NOT IN (SELECT literaturedb_asso_document_tag.document_id FROM literaturedb_asso_document_tag)');
+		$stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+		$stmt->execute();
+		$stmt->bindColumn('id', $rowId);
 		
 		$documents = array();
-		while($row = mysql_fetch_array($result))
-			$documents[] = self::fetch($row['id']);
+		while($stmt->fetch()){
+			$documents[] = self::fetch($rowId);
+		}
 		return $documents;
 	}
 	
 	static function fetchWithTag($tag, $userId){
-		$cmd = sprintf('SELECT literaturedb_document.id FROM literaturedb_document, literaturedb_tag, literaturedb_asso_document_tag WHERE literaturedb_document.user_id = %s AND literaturedb_asso_document_tag.document_id = literaturedb_document.id AND literaturedb_asso_document_tag.tag_id = literaturedb_tag.id AND literaturedb_tag.name = %s ORDER BY literaturedb_document.date DESC',
-			LibDb::secInp($userId),
-			LibDb::secInp($tag));
-		$result = LibDb::query($cmd);
+		$stmt = LibDb::prepare('SELECT literaturedb_document.id FROM literaturedb_document, literaturedb_tag, literaturedb_asso_document_tag WHERE literaturedb_document.user_id = :user_id AND literaturedb_asso_document_tag.document_id = literaturedb_document.id AND literaturedb_asso_document_tag.tag_id = literaturedb_tag.id AND literaturedb_tag.name = :tag ORDER BY literaturedb_document.date DESC');
+		$stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+		$stmt->bindParam(':tag', $tag);
+		$stmt->execute();
+		$stmt->bindColumn('id', $rowId);
 		
 		$documents = array();
-		while($row = mysql_fetch_array($result))
-			$documents[] = self::fetch($row['id']);
+		while($stmt->fetch()){
+			$documents[] = self::fetch($rowId);
+		}
 		return $documents;
 	}
 	
 	static function fetchWithSearch($searchString, $userId){
-		$cmd = sprintf('SELECT literaturedb_document.id FROM literaturedb_document WHERE literaturedb_document.user_id = %s AND (literaturedb_document.id = %s OR literaturedb_document.title LIKE %s OR literaturedb_document.date LIKE %s OR literaturedb_document.abstract LIKE %s OR literaturedb_document.address LIKE %s OR literaturedb_document.booktitle LIKE %s OR literaturedb_document.chapter LIKE %s OR literaturedb_document.doi LIKE %s OR literaturedb_document.ean LIKE %s OR literaturedb_document.edition LIKE %s OR literaturedb_document.institution LIKE %s OR literaturedb_document.number LIKE %s OR literaturedb_document.organization LIKE %s OR literaturedb_document.pages LIKE %s OR literaturedb_document.school LIKE %s OR literaturedb_document.series LIKE %s OR literaturedb_document.url LIKE %s OR literaturedb_document.volume LIKE %s OR literaturedb_document.note LIKE %s OR literaturedb_document.filename LIKE %s OR literaturedb_document.extension LIKE %s OR literaturedb_document.datetime_created LIKE %s OR literaturedb_document.id IN (SELECT literaturedb_asso_document_author.document_id FROM literaturedb_asso_document_author, literaturedb_person WHERE literaturedb_asso_document_author.person_id = literaturedb_person.id AND (literaturedb_person.firstname LIKE %s OR literaturedb_person.lastname LIKE %s)) OR literaturedb_document.id IN (SELECT literaturedb_asso_document_editor.document_id FROM literaturedb_asso_document_editor, literaturedb_person WHERE literaturedb_asso_document_editor.person_id = literaturedb_person.id AND (literaturedb_person.firstname LIKE %s OR literaturedb_person.lastname LIKE %s)) OR literaturedb_document.id IN (SELECT literaturedb_asso_document_tag.document_id FROM literaturedb_asso_document_tag, literaturedb_tag WHERE literaturedb_asso_document_tag.tag_id = literaturedb_tag.id AND literaturedb_tag.name LIKE %s) OR literaturedb_document.journal_id IN (SELECT literaturedb_journal.id FROM literaturedb_journal WHERE literaturedb_journal.name LIKE %s) OR literaturedb_document.publisher_id IN (SELECT literaturedb_publisher.id FROM literaturedb_publisher WHERE literaturedb_publisher.name LIKE %s)) ORDER BY literaturedb_document.date DESC',
-			LibDb::secInp($userId),
-			LibDb::secInp($searchString),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'),
-			LibDb::secInp('%'.$searchString.'%'));
-		$result = LibDb::query($cmd);
+		$likeSearchString = '%'.$searchString.'%';
+	
+		$stmt = LibDb::prepare('SELECT literaturedb_document.id FROM literaturedb_document 
+			WHERE literaturedb_document.user_id = :user_id AND 
+			(literaturedb_document.id = :id 
+			OR literaturedb_document.title LIKE :title OR literaturedb_document.date LIKE :date 
+			OR literaturedb_document.abstract LIKE :abstract OR literaturedb_document.address LIKE :address 
+			OR literaturedb_document.booktitle LIKE :booktitle OR literaturedb_document.chapter LIKE :chapter 
+			OR literaturedb_document.doi LIKE :doi OR literaturedb_document.ean LIKE :ean 
+			OR literaturedb_document.edition LIKE :edition OR literaturedb_document.institution LIKE :institution 
+			OR literaturedb_document.number LIKE :number OR literaturedb_document.organization LIKE :organization 
+			OR literaturedb_document.pages LIKE :pages OR literaturedb_document.school LIKE :school 
+			OR literaturedb_document.series LIKE :series OR literaturedb_document.url LIKE :url 
+			OR literaturedb_document.volume LIKE :volume OR literaturedb_document.note LIKE :note 
+			OR literaturedb_document.filename LIKE :filename OR literaturedb_document.extension LIKE :extension 
+			OR literaturedb_document.datetime_created LIKE :datetime_created 
+			OR literaturedb_document.id IN (
+				SELECT literaturedb_asso_document_author.document_id FROM literaturedb_asso_document_author, literaturedb_person 
+				WHERE literaturedb_asso_document_author.person_id = literaturedb_person.id 
+				AND (literaturedb_person.firstname LIKE :author_firstname OR literaturedb_person.lastname LIKE :author_lastname)) 
+			OR literaturedb_document.id IN (
+				SELECT literaturedb_asso_document_editor.document_id FROM literaturedb_asso_document_editor, literaturedb_person 
+				WHERE literaturedb_asso_document_editor.person_id = literaturedb_person.id 
+				AND (literaturedb_person.firstname LIKE :editor_firstname OR literaturedb_person.lastname LIKE :editor_lastname)) 
+			OR literaturedb_document.id IN (SELECT literaturedb_asso_document_tag.document_id FROM literaturedb_asso_document_tag, literaturedb_tag 
+				WHERE literaturedb_asso_document_tag.tag_id = literaturedb_tag.id AND literaturedb_tag.name LIKE :tag) 
+			OR literaturedb_document.journal_id IN (
+				SELECT literaturedb_journal.id FROM literaturedb_journal WHERE literaturedb_journal.name LIKE :journal_name) 
+			OR literaturedb_document.publisher_id IN (
+				SELECT literaturedb_publisher.id FROM literaturedb_publisher WHERE literaturedb_publisher.name LIKE :publisher_name)) 
+			ORDER BY literaturedb_document.date DESC');
+		$stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+		$stmt->bindParam(':id', $searchString, PDO::PARAM_INT);
+		$stmt->bindParam(':title', $likeSearchString);
+		$stmt->bindParam(':date', $likeSearchString);
+		$stmt->bindParam(':abstract', $likeSearchString);
+		$stmt->bindParam(':address', $likeSearchString);
+		$stmt->bindParam(':booktitle', $likeSearchString);
+		$stmt->bindParam(':chapter', $likeSearchString);
+		$stmt->bindParam(':doi', $likeSearchString);
+		$stmt->bindParam(':ean', $likeSearchString);
+		$stmt->bindParam(':edition', $likeSearchString);
+		$stmt->bindParam(':institution', $likeSearchString);
+		$stmt->bindParam(':number', $likeSearchString);
+		$stmt->bindParam(':organization', $likeSearchString);
+		$stmt->bindParam(':pages', $likeSearchString);
+		$stmt->bindParam(':school', $likeSearchString);
+		$stmt->bindParam(':series', $likeSearchString);
+		$stmt->bindParam(':url', $likeSearchString);
+		$stmt->bindParam(':volume', $likeSearchString);
+		$stmt->bindParam(':note', $likeSearchString);
+		$stmt->bindParam(':filename', $likeSearchString);
+		$stmt->bindParam(':extension', $likeSearchString);
+		$stmt->bindParam(':datetime_created', $likeSearchString);
+		$stmt->bindParam(':author_firstname', $likeSearchString);
+		$stmt->bindParam(':author_lastname', $likeSearchString);
+		$stmt->bindParam(':editor_firstname', $likeSearchString);
+		$stmt->bindParam(':editor_lastname', $likeSearchString);
+		$stmt->bindParam(':tag', $likeSearchString);
+		$stmt->bindParam(':journal_name', $likeSearchString);
+		$stmt->bindParam(':publisher_name', $likeSearchString);
+		$stmt->execute();
+		$stmt->bindColumn('id', $rowId);
 		
 		$documents = array();
-		while($row = mysql_fetch_array($result))
-			$documents[] = self::fetch($row['id']);
+		while($stmt->fetch()){
+			$documents[] = self::fetch($rowId);
+		}
 		return $documents;
 	}
 	
 	static function fetchWithAuthor($authorId){
-		$cmd = sprintf('SELECT literaturedb_document.id FROM literaturedb_document, literaturedb_asso_document_author WHERE literaturedb_document.id = literaturedb_asso_document_author.document_id AND literaturedb_asso_document_author.person_id = %s ORDER BY date DESC',
-			LibDb::secInp($authorId));
-		$result = LibDb::query($cmd);
+		$stmt = LibDb::prepare('SELECT literaturedb_document.id FROM literaturedb_document, literaturedb_asso_document_author WHERE literaturedb_document.id = literaturedb_asso_document_author.document_id AND literaturedb_asso_document_author.person_id = :id ORDER BY date DESC');
+		$stmt->bindParam(':id', $authorId, PDO::PARAM_INT);
+		$stmt->execute();
+		$stmt->bindColumn('id', $rowId);
+		
 		$documents = array();
-		while($row = mysql_fetch_array($result))
-			$documents[] = self::fetch($row['id']);
+		while($stmt->fetch())
+			$documents[] = self::fetch($rowId);
 		return $documents;
 	}
 	
 	static function fetch($id){
-		$cmd = sprintf('SELECT literaturedb_document.id, literaturedb_document.hash, literaturedb_document.entrytype_id, literaturedb_document.title, literaturedb_document.date, literaturedb_document.abstract, literaturedb_document.address, literaturedb_document.booktitle, literaturedb_document.chapter, literaturedb_document.doi, literaturedb_document.ean, literaturedb_document.edition, literaturedb_document.institution, literaturedb_document.journal_id, literaturedb_document.number, literaturedb_document.organization, literaturedb_document.pages, literaturedb_document.publisher_id, literaturedb_document.school, literaturedb_document.series, literaturedb_document.url, literaturedb_document.volume, literaturedb_document.note, literaturedb_document.rating, literaturedb_document.filename, literaturedb_document.extension, literaturedb_document.filesize, literaturedb_document.datetime_created, literaturedb_document.user_id, literaturedb_publisher.name AS publisher_name, literaturedb_journal.name AS journal_name FROM literaturedb_document LEFT JOIN literaturedb_publisher ON literaturedb_publisher.id = literaturedb_document.publisher_id LEFT JOIN literaturedb_journal ON literaturedb_journal.id = literaturedb_document.journal_id WHERE literaturedb_document.id = %s',
-			LibDb::secInp($id));
-		$row = LibDb::queryArray($cmd);
+		$stmt = LibDb::prepare('SELECT literaturedb_document.id, literaturedb_document.hash, literaturedb_document.entrytype_id, literaturedb_document.title, literaturedb_document.date, literaturedb_document.abstract, literaturedb_document.address, literaturedb_document.booktitle, literaturedb_document.chapter, literaturedb_document.doi, literaturedb_document.ean, literaturedb_document.edition, literaturedb_document.institution, literaturedb_document.journal_id, literaturedb_document.number, literaturedb_document.organization, literaturedb_document.pages, literaturedb_document.publisher_id, literaturedb_document.school, literaturedb_document.series, literaturedb_document.url, literaturedb_document.volume, literaturedb_document.note, literaturedb_document.rating, literaturedb_document.filename, literaturedb_document.extension, literaturedb_document.filesize, literaturedb_document.datetime_created, literaturedb_document.user_id, literaturedb_publisher.name AS publisher_name, literaturedb_journal.name AS journal_name FROM literaturedb_document LEFT JOIN literaturedb_publisher ON literaturedb_publisher.id = literaturedb_document.publisher_id LEFT JOIN literaturedb_journal ON literaturedb_journal.id = literaturedb_document.journal_id WHERE literaturedb_document.id = :id');
+		$stmt->bindParam(':id', $id, PDO::PARAM_INT);
+		$stmt->execute();
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 		
 		return self::buildDocumentArray($row);
 	}
@@ -134,10 +179,11 @@ class LibDocument{
 		if($hash == '')
 			return;
 	
-		$cmd = sprintf('SELECT literaturedb_document.id, literaturedb_document.hash, literaturedb_document.entrytype_id, literaturedb_document.title, literaturedb_document.date, literaturedb_document.abstract, literaturedb_document.address, literaturedb_document.booktitle, literaturedb_document.chapter, literaturedb_document.doi, literaturedb_document.ean, literaturedb_document.edition, literaturedb_document.institution, literaturedb_document.journal_id, literaturedb_document.number, literaturedb_document.organization, literaturedb_document.pages, literaturedb_document.publisher_id, literaturedb_document.school, literaturedb_document.series, literaturedb_document.url, literaturedb_document.volume, literaturedb_document.note, literaturedb_document.rating, literaturedb_document.filename, literaturedb_document.extension, literaturedb_document.filesize, literaturedb_document.datetime_created, literaturedb_document.user_id, literaturedb_publisher.name AS publisher_name, literaturedb_journal.name AS journal_name FROM literaturedb_document LEFT JOIN literaturedb_publisher ON literaturedb_publisher.id = literaturedb_document.publisher_id LEFT JOIN literaturedb_journal ON literaturedb_journal.id = literaturedb_document.journal_id WHERE literaturedb_document.hash = %s AND literaturedb_document.user_id = %s',
-			LibDb::secInp($hash),
-			LibDb::secInp($userId));
-		$row = LibDb::queryArray($cmd);
+		$stmt = LibDb::prepare('SELECT literaturedb_document.id, literaturedb_document.hash, literaturedb_document.entrytype_id, literaturedb_document.title, literaturedb_document.date, literaturedb_document.abstract, literaturedb_document.address, literaturedb_document.booktitle, literaturedb_document.chapter, literaturedb_document.doi, literaturedb_document.ean, literaturedb_document.edition, literaturedb_document.institution, literaturedb_document.journal_id, literaturedb_document.number, literaturedb_document.organization, literaturedb_document.pages, literaturedb_document.publisher_id, literaturedb_document.school, literaturedb_document.series, literaturedb_document.url, literaturedb_document.volume, literaturedb_document.note, literaturedb_document.rating, literaturedb_document.filename, literaturedb_document.extension, literaturedb_document.filesize, literaturedb_document.datetime_created, literaturedb_document.user_id, literaturedb_publisher.name AS publisher_name, literaturedb_journal.name AS journal_name FROM literaturedb_document LEFT JOIN literaturedb_publisher ON literaturedb_publisher.id = literaturedb_document.publisher_id LEFT JOIN literaturedb_journal ON literaturedb_journal.id = literaturedb_document.journal_id WHERE literaturedb_document.hash = :hash AND literaturedb_document.user_id = :user_id');
+		$stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+		$stmt->bindParam(':hash', $hash);
+		$stmt->execute();
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 		
 		return self::buildDocumentArray($row);
 	}
@@ -209,141 +255,190 @@ class LibDocument{
 			if(!isset($document[$field]))
 				$document[$field] = '';
 
-
 		$document['rating'] = min(5, $document['rating']);
 		
 		/*
 		* Journal
 		*/
 		$journalName = '';
-		if(isset($document['journal_name']))
+		if(isset($document['journal_name'])){
 			$journalName = trim($document['journal_name']);
+		}
 
 		if($journalName != ''){
-			$cmd = sprintf('INSERT IGNORE INTO literaturedb_journal (name, user_id) VALUES (%s, %s)',
-				LibDb::secInp($journalName),
-				LibDb::secInp($document['user_id']));
-			LibDb::query($cmd);
-	
-			$cmd = sprintf('SELECT id FROM literaturedb_journal WHERE name = %s AND user_id = %s', 
-				LibDb::secInp($journalName),
-				LibDb::secInp($document['user_id']));
-			$document['journal_id'] = LibDb::queryAttribute($cmd);
+			$stmt = LibDb::prepare('INSERT IGNORE INTO literaturedb_journal (name, user_id) VALUES (:name, :user_id)');
+			$stmt->bindParam(':name', $journalName);
+			$stmt->bindParam(':user_id', $document['user_id'], PDO::PARAM_INT);
+			$stmt->execute();
+			
+			$stmt = LibDb::prepare('SELECT id FROM literaturedb_journal WHERE name = :name AND user_id = :user_id');
+			$stmt->bindParam(':name', $journalName);
+			$stmt->bindParam(':user_id', $document['user_id'], PDO::PARAM_INT);
+			$stmt->execute();
+			$stmt->bindColumn('id', $journalId);
+			$stmt->fetch();
+			
+			$document['journal_id'] = $journalId;
 		}
 
 		/*
 		* Publisher
 		*/
 		$publisherName = '';
-		if(isset($document['publisher_name']))
+		if(isset($document['publisher_name'])){
 			$publisherName = trim($document['publisher_name']);
+		}
 
 		if($publisherName != ''){
-			$cmd = sprintf('INSERT IGNORE INTO literaturedb_publisher (name, user_id) VALUES (%s, %s)',
-				LibDb::secInp($publisherName),
-				LibDb::secInp($document['user_id']));
-			LibDb::query($cmd);
+			$stmt = LibDb::prepare('INSERT IGNORE INTO literaturedb_publisher (name, user_id) VALUES (:name, :user_id)');
+			$stmt->bindParam(':name', $publisherName);
+			$stmt->bindParam(':user_id', $document['user_id'], PDO::PARAM_INT);
+			$stmt->execute();
 	
-			$cmd = sprintf('SELECT id FROM literaturedb_publisher WHERE name = %s AND user_id = %s', 
-				LibDb::secInp($publisherName),
-				LibDb::secInp($document['user_id']));
-			$document['publisher_id'] = LibDb::queryAttribute($cmd);
+			$stmt = LibDb::prepare('SELECT id FROM literaturedb_publisher WHERE name = :name AND user_id = :user_id');
+			$stmt->bindParam(':name', $publisherName);
+			$stmt->bindParam(':user_id', $document['user_id'], PDO::PARAM_INT);
+			$stmt->execute();
+			$stmt->bindColumn('id', $publisherId);
+			$stmt->fetch();
+
+			$document['publisher_id'] = $publisherId;
 		}
 
 		/*
 		* Document
 		*/
-		$cmd = sprintf('SELECT COUNT(*) FROM literaturedb_document WHERE id = %s',
-			LibDb::secInp($document['id']));
-		$count = LibDb::queryAttribute($cmd);
+		$cleanEntryTypeId = LibDb::zerofy(trim($document['entrytype_id']));
+		$cleanTitle = LibString::cleanBibtexString($document['title']);
+		$cleanDate = trim($document['date']);
+		$cleanAbstract = LibString::cleanBibtexString($document['abstract']);
+		$cleanAddress = LibString::cleanBibtexString($document['address']);
+		$cleanBooktitle = LibString::cleanBibtexString($document['booktitle']);
+		$cleanChapter = LibString::cleanBibtexString($document['chapter']);
+		$cleanDoi = LibString::cleanBibtexString($document['doi']);
+		$cleanEan = LibString::cleanBibtexString($document['ean']);
+		$cleanEdition = LibDb::zerofy(LibString::cleanBibtexString($document['edition']));
+		$cleanInstitution = LibString::cleanBibtexString($document['institution']);
+		$cleanJournalId = LibDb::zerofy($document['journal_id']);
+		$cleanNumber = LibString::cleanBibtexString($document['number']);
+		$cleanOrganization = LibString::cleanBibtexString($document['organization']);
+		$cleanPages = LibString::cleanBibtexString($document['pages']);
+		$cleanPublisherId = LibDb::zerofy($document['publisher_id']);
+		$cleanSchool = LibString::cleanBibtexString($document['school']);
+		$cleanSeries = LibString::cleanBibtexString($document['series']);
+		$cleanUrl = trim($document['url']);
+		$cleanVolume = LibString::cleanBibtexString($document['volume']);
+		$cleanNote = LibString::cleanBibtexString($document['note']);
+		$cleanRating = LibDb::zerofy(trim($document['rating']));
+
+		$stmt = LibDb::prepare('SELECT COUNT(*) AS number FROM literaturedb_document WHERE id = :id');
+		$stmt->bindParam(':id', $document['id'], PDO::PARAM_INT);
+		$stmt->execute();
+		$stmt->bindColumn('number', $count);
+		$stmt->fetch();
 
 		if($count > 0){
-			// filesize, filename, extension, datetime_created, user_id may not be updated here! they are static
-			$cmd = sprintf('UPDATE literaturedb_document SET entrytype_id = %s, title = %s, date = %s, abstract = %s, address = %s, booktitle = %s, chapter = %s, doi = %s, ean = %s, edition = %s, institution = %s, journal_id = %s, number = %s, organization = %s, pages = %s, publisher_id = %s, school = %s, series = %s, url = %s, volume = %s, note = %s, rating = %s WHERE id = %s',
-				LibDb::secInp(LibDb::zerofy(trim($document['entrytype_id']))),
-				LibDb::secInp(LibString::cleanBibtexString($document['title'])),
-				LibDb::secInp(trim($document['date'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['abstract'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['address'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['booktitle'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['chapter'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['doi'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['ean'])),
-				LibDb::secInp(LibDb::zerofy(LibString::cleanBibtexString($document['edition']))),
-				LibDb::secInp(LibString::cleanBibtexString($document['institution'])),
-				LibDb::secInp(LibDb::zerofy($document['journal_id'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['number'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['organization'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['pages'])),
-				LibDb::secInp(LibDb::zerofy($document['publisher_id'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['school'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['series'])),
-				LibDb::secInp(trim($document['url'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['volume'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['note'])),
-				LibDb::secInp(LibDb::zerofy(trim($document['rating']))),
-				LibDb::secInp($document['id']));
-			LibDb::query($cmd);
+			// filesize, filename, extension, datetime_created, user_id may not be updated here!
+			$stmt = LibDb::prepare('UPDATE literaturedb_document SET entrytype_id = :entrytype_id, 
+				title = :title, date = :date, abstract = :abstract, address = :address, 
+				booktitle = :booktitle, chapter = :chapter, doi = :doi, 
+				ean = :ean, edition = :edition, institution = :institution, journal_id = :journal_id, 
+				number = :number, organization = :organization, 
+				pages = :pages, publisher_id = :publisher_id, school = :school, series = :series, url = :url, 
+				volume = :volume, note = :note, rating = :rating WHERE id = :id');
+			$stmt->bindParam(':entrytype_id', $cleanEntryTypeId, PDO::PARAM_INT);
+			$stmt->bindParam(':title', $cleanTitle);
+			$stmt->bindParam(':date', $cleanDate);
+			$stmt->bindParam(':abstract', $cleanAbstract);
+			$stmt->bindParam(':address', $cleanAddress);
+			$stmt->bindParam(':booktitle', $cleanBooktitle);
+			$stmt->bindParam(':chapter', $cleanChapter);
+			$stmt->bindParam(':doi', $cleanDoi);
+			$stmt->bindParam(':ean', $cleanEan);
+			$stmt->bindParam(':edition', $cleanEdition);
+			$stmt->bindParam(':institution', $cleanInstitution);
+			$stmt->bindParam(':journal_id', $cleanJournalId, PDO::PARAM_INT);
+			$stmt->bindParam(':number', $cleanNumber, PDO::PARAM_INT);
+			$stmt->bindParam(':organization', $cleanOrganization);
+			$stmt->bindParam(':pages', $cleanPages);
+			$stmt->bindParam(':publisher_id', $cleanPublisherId);
+			$stmt->bindParam(':school', $cleanSchool);
+			$stmt->bindParam(':series', $cleanSeries);	
+			$stmt->bindParam(':url', $cleanUrl);
+			$stmt->bindParam(':volume', $cleanVolume);
+			$stmt->bindParam(':note', $cleanNote);
+			$stmt->bindParam(':rating', $cleanRating, PDO::PARAM_INT);
+			$stmt->bindParam(':id', $document['id'], PDO::PARAM_INT);
+			$stmt->execute();
 
 			$id = $document['id'];
 		}
 		else{
-			$cmd = sprintf('INSERT IGNORE INTO literaturedb_document (entrytype_id, title, date, abstract, address, booktitle, chapter, doi, ean, edition, institution, journal_id, number, organization, pages, publisher_id, school, series, url, volume, note, rating, datetime_created, user_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), %s)',
-				LibDb::secInp(LibDb::zerofy(trim($document['entrytype_id']))),
-				LibDb::secInp(LibString::cleanBibtexString($document['title'])),
-				LibDb::secInp(trim($document['date'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['abstract'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['address'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['booktitle'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['chapter'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['doi'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['ean'])),
-				LibDb::secInp(LibDb::zerofy(LibString::cleanBibtexString($document['edition']))),
-				LibDb::secInp(LibString::cleanBibtexString($document['institution'])),
-				LibDb::secInp(LibDb::zerofy(trim($document['journal_id']))),
-				LibDb::secInp(LibString::cleanBibtexString($document['number'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['organization'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['pages'])),
-				LibDb::secInp(LibDb::zerofy(trim($document['publisher_id']))),
-				LibDb::secInp(LibString::cleanBibtexString($document['school'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['series'])),
-				LibDb::secInp(trim($document['url'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['volume'])),
-				LibDb::secInp(LibString::cleanBibtexString($document['note'])),
-				LibDb::secInp(LibDb::zerofy(trim($document['rating']))),
-				LibDb::secInp(trim($document['user_id'])));
-			LibDb::query($cmd);
+			$stmt = LibDb::prepare('INSERT IGNORE INTO literaturedb_document 
+				(entrytype_id, title, date, abstract, address, booktitle, chapter, doi, ean, edition, 
+				institution, journal_id, number, organization, pages, publisher_id, school, series, 
+				url, volume, note, rating, datetime_created, user_id) 
+				VALUES (:entrytype_id, :title, :date, :abstract, :address, :booktitle, :chapter, :doi, :ean, :edition, 
+				:institution, :journal_id, :number, :organization, :pages, :publisher_id, :school, :series, 
+				:url, :volume, :note, :rating, NOW(), :user_id)');
+			$stmt->bindParam(':entrytype_id', $cleanEntryTypeId, PDO::PARAM_INT);
+			$stmt->bindParam(':title', $cleanTitle);
+			$stmt->bindParam(':date', $cleanDate);
+			$stmt->bindParam(':abstract', $cleanAbstract);
+			$stmt->bindParam(':address', $cleanAddress);
+			$stmt->bindParam(':booktitle', $cleanBooktitle);
+			$stmt->bindParam(':chapter', $cleanChapter);
+			$stmt->bindParam(':doi', $cleanDoi);
+			$stmt->bindParam(':ean', $cleanEan);
+			$stmt->bindParam(':edition', $cleanEdition);
+			$stmt->bindParam(':institution', $cleanInstitution);
+			$stmt->bindParam(':journal_id', $cleanJournalId, PDO::PARAM_INT);
+			$stmt->bindParam(':number', $cleanNumber, PDO::PARAM_INT);
+			$stmt->bindParam(':organization', $cleanOrganization);
+			$stmt->bindParam(':pages', $cleanPages);
+			$stmt->bindParam(':publisher_id', $cleanPublisherId);
+			$stmt->bindParam(':school', $cleanSchool);
+			$stmt->bindParam(':series', $cleanSeries);	
+			$stmt->bindParam(':url', $cleanUrl);
+			$stmt->bindParam(':volume', $cleanVolume);
+			$stmt->bindParam(':note', $cleanNote);
+			$stmt->bindParam(':rating', $cleanRating, PDO::PARAM_INT);
+			$stmt->bindParam(':user_id', $document['user_id'], PDO::PARAM_INT);
+			$stmt->execute();
 
-			$id = mysql_insert_id();
+			$id = LibDb::insertId();
 		}
-		
+				
 		/*
 		* Tags
 		*/
-		$cmd = sprintf('DELETE FROM literaturedb_asso_document_tag WHERE document_id = %s',
-			LibDb::secInp($id));
-		LibDb::query($cmd);
+		$stmt = LibDb::prepare('DELETE FROM literaturedb_asso_document_tag WHERE document_id = :document_id');
+		$stmt->bindParam(':document_id', $id, PDO::PARAM_INT);
+		$stmt->execute();
 		
 		if(isset($document['tags']) && is_array($document['tags'])){
 			foreach($document['tags'] as $tag){
 				if($document['user_id'] == $tag['user_id']){
-					$cmd = sprintf('INSERT IGNORE INTO literaturedb_tag (name, user_id) VALUES (%s, %s)',
-						LibDb::secInp($tag['name']),
-						LibDb::secInp($tag['user_id']));
-					LibDb::query($cmd);
+					$stmt = LibDb::prepare('INSERT IGNORE INTO literaturedb_tag (name, user_id) VALUES (:name, :user_id)');
+					$stmt->bindParam(':name', $tag['name']);
+					$stmt->bindParam(':user_id', $tag['user_id'], PDO::PARAM_INT);
+					$stmt->execute();
 				}
 			}
 	
 			foreach($document['tags'] as $tag){
 				if($document['user_id'] == $tag['user_id']){
-					$cmd = sprintf('SELECT id FROM literaturedb_tag WHERE name = %s AND user_id = %s', 
-						LibDb::secInp($tag['name']),
-						LibDb::secInp($tag['user_id']));
-					$tagId = LibDb::queryAttribute($cmd);
-					$cmd = sprintf('INSERT IGNORE INTO literaturedb_asso_document_tag (document_id, tag_id) VALUES (%s, %s)',
-						LibDb::secInp($id),
-						LibDb::secInp($tagId));
-					LibDb::query($cmd);
+					$stmt = LibDb::prepare('SELECT id FROM literaturedb_tag WHERE name = :name AND user_id = :user_id');
+					$stmt->bindParam(':name', $tag['name']);
+					$stmt->bindParam(':user_id', $tag['user_id'], PDO::PARAM_INT);
+					$stmt->execute();
+					$stmt->bindColumn('id', $tagId);
+					$stmt->fetch();
+					
+					$stmt = LibDb::prepare('INSERT IGNORE INTO literaturedb_asso_document_tag (document_id, tag_id) VALUES (:document_id, :tag_id)');
+					$stmt->bindParam(':document_id', $id, PDO::PARAM_INT);
+					$stmt->bindParam(':tag_id', $tagId, PDO::PARAM_INT);
+					$stmt->execute();
 				}
 			}
 		}
@@ -351,75 +446,81 @@ class LibDocument{
 		/*
 		* Authors
 		*/
-		$cmd = sprintf('DELETE FROM literaturedb_asso_document_author WHERE document_id = %s',
-			LibDb::secInp($id));
-		LibDb::query($cmd);
+		$stmt = LibDb::prepare('DELETE FROM literaturedb_asso_document_author WHERE document_id = :document_id');
+		$stmt->bindParam(':document_id', $id, PDO::PARAM_INT);
+		$stmt->execute();
 
 		if(isset($document['authors']) && is_array($document['authors'])){
 			foreach($document['authors'] as $author){
 				if($document['user_id'] == $author['user_id']){
-					$cmd = sprintf('INSERT IGNORE INTO literaturedb_person (lastname, firstname, prefix, user_id) VALUES (%s, %s, %s, %s)',
-						LibDb::secInp($author['lastname']),
-						LibDb::secInp($author['firstname']),
-						LibDb::secInp($author['prefix']),
-						LibDb::secInp($author['user_id']));
-					LibDb::query($cmd);
+					$stmt = LibDb::prepare('INSERT IGNORE INTO literaturedb_person (firstname, prefix, lastname, suffix, user_id) VALUES (:firstname, :prefix, :lastname, :suffix, :user_id)');
+					$stmt->bindParam(':firstname', $author['firstname']);
+					$stmt->bindParam(':prefix', $author['prefix']);
+					$stmt->bindParam(':lastname', $author['lastname']);
+					$stmt->bindParam(':suffix', $author['suffix']);
+					$stmt->bindParam(':user_id', $author['user_id'], PDO::PARAM_INT);
+					$stmt->execute();
 				}
 			}
 
 			$i = 1;
 			foreach($document['authors'] as $author){
 				if($document['user_id'] == $author['user_id']){
-					$cmd = sprintf('SELECT id FROM literaturedb_person WHERE lastname = %s AND firstname = %s AND user_id = %s', 
-						LibDb::secInp($author['lastname']),
-						LibDb::secInp($author['firstname']),
-						LibDb::secInp($author['user_id']));
-			
-					$authorId = LibDb::queryAttribute($cmd);
-					$cmd = sprintf('INSERT IGNORE INTO literaturedb_asso_document_author (document_id, person_id, position) VALUES (%s, %s, %s)',
-						LibDb::secInp($id),
-						LibDb::secInp($authorId),
-						LibDb::secInp($i));
-					LibDb::query($cmd);
+					$stmt = LibDb::prepare('SELECT id FROM literaturedb_person WHERE lastname = :lastname AND firstname = :firstname AND user_id = :user_id');
+					$stmt->bindParam(':lastname', $author['lastname']);
+					$stmt->bindParam(':firstname', $author['firstname']);
+					$stmt->bindParam(':user_id', $author['user_id'], PDO::PARAM_INT);
+					$stmt->execute();
+					$stmt->bindColumn('id', $authorId);
+					$stmt->fetch();
+
+					$stmt = LibDb::prepare('INSERT IGNORE INTO literaturedb_asso_document_author (document_id, person_id, position) VALUES (:document_id, :person_id, :position)');
+					$stmt->bindParam(':document_id', $id, PDO::PARAM_INT);
+					$stmt->bindParam(':person_id', $authorId, PDO::PARAM_INT);
+					$stmt->bindParam(':position', $i, PDO::PARAM_INT);
+					$stmt->execute();
 		
 					$i++;
 				}
 			}
 		}
-	
+
 		/*
 		* Editors
 		*/
-		$cmd = sprintf('DELETE FROM literaturedb_asso_document_editor WHERE document_id = %s',
-			LibDb::secInp($id));
-		LibDb::query($cmd);
+		$stmt = LibDb::prepare('DELETE FROM literaturedb_asso_document_editor WHERE document_id = :document_id');
+		$stmt->bindParam(':document_id', $id, PDO::PARAM_INT);
+		$stmt->execute();
 
 		if(isset($document['editors']) && is_array($document['editors'])){
 			foreach($document['editors'] as $editor){
 				if($document['user_id'] == $editor['user_id']){
-					$cmd = sprintf('INSERT IGNORE INTO literaturedb_person (lastname, firstname, prefix, user_id) VALUES (%s, %s, %s, %s)',
-						LibDb::secInp($editor['lastname']),
-						LibDb::secInp($editor['firstname']),
-						LibDb::secInp($editor['prefix']),
-						LibDb::secInp($editor['user_id']));
-					LibDb::query($cmd);
+					$stmt = LibDb::prepare('INSERT IGNORE INTO literaturedb_person (firstname, prefix, lastname, suffix, user_id) VALUES (:firstname, :prefix, :lastname, :suffix, :user_id)');
+					$stmt->bindParam(':firstname', $editor['firstname']);
+					$stmt->bindParam(':prefix', $editor['prefix']);
+					$stmt->bindParam(':lastname', $editor['lastname']);
+					$stmt->bindParam(':suffix', $editor['suffix']);
+					$stmt->bindParam(':user_id', $editor['user_id'], PDO::PARAM_INT);
+					$stmt->execute();
 				}
 			}
 
 			$i = 1;
 			foreach($document['editors'] as $editor){
 				if($document['user_id'] == $editor['user_id']){
-					$cmd = sprintf('SELECT id FROM literaturedb_person WHERE lastname = %s AND firstname = %s AND user_id = %s', 
-						LibDb::secInp($editor['lastname']),
-						LibDb::secInp($editor['firstname']),
-						LibDb::secInp($editor['user_id']));
-			
-					$editorId = LibDb::queryAttribute($cmd);
-					$cmd = sprintf('INSERT IGNORE INTO literaturedb_asso_document_editor (document_id, person_id, position) VALUES (%s, %s, %s)',
-						LibDb::secInp($id),
-						LibDb::secInp($editorId),
-						LibDb::secInp($i));
-					LibDb::query($cmd);
+					$stmt = LibDb::prepare('SELECT id FROM literaturedb_person WHERE lastname = :lastname AND firstname = :firstname AND user_id = :user_id');
+					$stmt->bindParam(':lastname', $editor['lastname']);
+					$stmt->bindParam(':firstname', $editor['firstname']);
+					$stmt->bindParam(':user_id', $editor['user_id'], PDO::PARAM_INT);
+					$stmt->execute();
+					$stmt->bindColumn('id', $editorId);
+					$stmt->fetch();
+
+					$stmt = LibDb::prepare('INSERT IGNORE INTO literaturedb_asso_document_editor (document_id, person_id, position) VALUES (:document_id, :person_id, :position)');
+					$stmt->bindParam(':document_id', $id, PDO::PARAM_INT);
+					$stmt->bindParam(':person_id', $editorId, PDO::PARAM_INT);
+					$stmt->bindParam(':position', $i, PDO::PARAM_INT);
+					$stmt->execute();
 
 					$i++;
 				}
@@ -441,30 +542,35 @@ class LibDocument{
 			LibGlobal::$errorTexts[] = 'Could not save file info due to an undefined document id.';
 		}elseif($hash != '' && $filename != ''){
 			$filesize = filesize(LibDocument::getFilePath($hash));
-			$cmd = sprintf('UPDATE literaturedb_document SET hash = %s, filename = %s, extension = %s, filesize = %s WHERE id = %s AND (hash = "" OR hash IS NULL)',
-				LibDb::secInp($hash),
-				LibDb::secInp($filename),
-				LibDb::secInp($extension),
-				LibDb::secInp($filesize),
-				LibDb::secInp($documentId));
-			LibDb::query($cmd);
+			
+			$stmt = LibDb::prepare('UPDATE literaturedb_document SET hash = :hash, filename = :filename, extension = :extension, filesize = :filesize WHERE id = :id AND (hash = "" OR hash IS NULL)');
+			$stmt->bindParam(':hash', $hash);
+			$stmt->bindParam(':filename', $filename);
+			$stmt->bindParam(':extension', $extension);
+			$stmt->bindParam(':filesize', $filesize, PDO::PARAM_INT);
+			$stmt->bindParam(':id', $documentId, PDO::PARAM_INT);
+			$stmt->execute();
 		}
 	}
 	
 	static function delete($documentId){
 		$deleted = false;
 		
-		$cmd = sprintf('SELECT hash FROM literaturedb_document WHERE id = %s',
-			LibDb::secInp($documentId));
-		$hash = LibDb::queryAttribute($cmd);
+		$stmt = LibDb::prepare('SELECT hash FROM literaturedb_document WHERE id = :id');
+		$stmt->bindParam(':id', $documentId, PDO::PARAM_INT);
+		$stmt->execute();
+		$stmt->bindColumn('hash', $hash);
+		$stmt->fetch();
 		
-		$cmd = sprintf('SELECT COUNT(hash) FROM literaturedb_document WHERE hash = %s',
-			LibDb::secInp($hash));
-		$count = LibDb::queryAttribute($cmd);
+		$stmt = LibDb::prepare('SELECT COUNT(hash) AS number FROM literaturedb_document WHERE hash = :hash');
+		$stmt->bindParam(':hash', $hash);
+		$stmt->execute();
+		$stmt->bindColumn('number', $count);
+		$stmt->fetch();
 		
-		$cmd = sprintf('DELETE FROM literaturedb_document WHERE id = %s',
-			LibDb::SecInp($documentId));
-		LibDb::query($cmd);
+		$stmt = LibDb::prepare('DELETE FROM literaturedb_document WHERE id = :id');
+		$stmt->bindParam(':id', $documentId, PDO::PARAM_INT);
+		$stmt->execute();
 		
 		LibDocument::deleteOrphans();
 		
@@ -482,7 +588,7 @@ class LibDocument{
 	static function deleteOrphans(){
 		/*
 		* Delete orphaned associations between documents and authors
-		*/	
+		*/
 		$cmd = 'DELETE FROM literaturedb_asso_document_author WHERE document_id NOT IN (SELECT id FROM literaturedb_document) OR person_id NOT IN (SELECT id FROM literaturedb_person)';
 		LibDb::query($cmd);
 
