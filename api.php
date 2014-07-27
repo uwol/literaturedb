@@ -204,35 +204,35 @@ switch($requestVars['action']){
 		break;
 		
 	case 'export_word2007':
-		if(!is_numeric($requestVars['id']))
+		if(!isset($requestVars['id']) || !is_numeric($requestVars['id']))
 			LibExport::printWord2007All($sessionUser);
 		else
 			LibExport::printWord2007Single($sessionUser, $requestVars['id']);
 		break;
 
 	case 'export_bibtex':
-		if(!is_numeric($requestVars['id']))
+		if(!isset($requestVars['id']) || !is_numeric($requestVars['id']))
 			LibExport::printBibtexAll($sessionUser);
 		else
 			LibExport::printBibtexSingle($sessionUser, $requestVars['id']);
 		break;
 
 	case 'export_bibix':
-		if(!is_numeric($requestVars['id']))
+		if(!isset($requestVars['id']) || !is_numeric($requestVars['id']))
 			LibExport::printBibixAll($sessionUser);
 		else
 			LibExport::printBibixSingle($sessionUser, $requestVars['id']);
 		break;
 
 	case 'export_ris':
-		if(!is_numeric($requestVars['id']))
+		if(!isset($requestVars['id']) || !is_numeric($requestVars['id']))
 			LibExport::printRisAll($sessionUser);
 		else
 			LibExport::printRisSingle($sessionUser, $requestVars['id']);
 		break;
 
 	case 'export_modsxml':
-		if(!is_numeric($requestVars['id']))
+		if(!isset($requestVars['id']) || !is_numeric($requestVars['id']))
 			LibExport::printModsXmlAll($sessionUser);
 		else
 			LibExport::printModsXmlSingle($sessionUser, $requestVars['id']);

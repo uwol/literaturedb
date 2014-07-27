@@ -30,7 +30,7 @@ $firstnameMissing = false;
 $lastnameMissing = false;
 
 $oldPasswordMissing = false;
-$oldPasswordIsWrong = false;
+$oldPasswordWrong = false;
 
 $newPassword1Missing = false;
 $newPassword2Missing = false;

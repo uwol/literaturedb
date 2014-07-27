@@ -89,8 +89,6 @@ class LibShare{
 			$stmt->bindParam(':following', $cleanFollowing, PDO::PARAM_BOOL);
 			$stmt->bindParam(':sharing', $cleanSharing, PDO::PARAM_BOOL);
 			$stmt->execute();
-
-			$id = $share['id'];
 		}
 		else{
 			$stmt = LibDb::prepare('INSERT INTO literaturedb_sys_share (local_user_id, remote_user_address, following, sharing) VALUES (:local_user_id, :remote_user_address, :following, :sharing)');

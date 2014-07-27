@@ -217,7 +217,7 @@ class LibExport{
 		if(substr($document['date'], 0, 4) > 0)
 			$dataEntries[] = 'year         = ' .substr($document['date'], 0, 4);
 		if(self::getMonth(substr($document['date'], 5, 2)) != ''){
-			$dayString;
+			$dayString = '';
 			if(substr($document['date'], 8, 2) > 0){
 				$day = (int) substr($document['date'], 8, 2);
 				$dayString = ' # "~' .$day. ',"';

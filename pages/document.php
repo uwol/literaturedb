@@ -120,17 +120,13 @@ if(isset($_REQUEST['action']) && ($_REQUEST['action'] == 'document_create' || $_
 		$document = array();
 
 		// derive document data from the hash
-		if($hash != ''){
-			$document['hash'] = $hash;
-		}
-
+		$document['hash'] = $hash;
+		
 		// derive document data from the uploaded file
-		$pathinfo = getPathinfoOfUploadedFile();		
-		if(is_array($pathinfo)){			
-			$document['title'] = isset($pathinfo['filename']) ? $pathinfo['filename'] : '';
-			$document['filename'] = isset($pathinfo['filename']) ? $pathinfo['filename'] : '';
-			$document['extension'] = isset($pathinfo['extension']) ? $pathinfo['extension'] : '';	
-		}
+		$pathinfo = getPathinfoOfUploadedFile();				
+		$document['title'] = is_array($pathinfo) && isset($pathinfo['filename']) ? $pathinfo['filename'] : '';
+		$document['filename'] = is_array($pathinfo) && isset($pathinfo['filename']) ? $pathinfo['filename'] : '';
+		$document['extension'] = is_array($pathinfo) && isset($pathinfo['extension']) ? $pathinfo['extension'] : '';	
 	}
 	
 	// ---------------------------------------------------
@@ -217,10 +213,13 @@ if(isset($_POST['action']) && $_POST['action'] == "document_save"){
 	//save the document
 	$documentAddress = LibDocument::buildCanonicalDocumentAddress(LibRouter::document_save($document, $sessionUser->getUserAddress()));
 
+	// save file info
+	$documentByAddress = LibRouter::document_fetch($documentAddress, $sessionUser->getUserAddress());
+
 	LibGlobal::$notificationTexts[] = 'The document has been saved.';
 	
 	// if no file has been appended to this document, yet
-	if($document['hash'] == ''){
+	if($documentByAddress['hash'] == ''){
 		$hash = storeAndHashUploadedFile();
 
 		// if a file has been uploaded
