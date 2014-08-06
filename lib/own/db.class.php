@@ -50,12 +50,12 @@ class LibDb{
 		return self::$connection->lastInsertId();
 	}
 	
-	static function prepare($cmd){
-		return self::$connection->prepare($cmd);
+	static function prepare($stmt){
+		return self::$connection->prepare($stmt);
 	}
 
-	static function query($cmd){
-		return self::$connection->query($cmd);
+	static function query($stmt){
+		return self::$connection->query($stmt);
 	}
 	
 	static function zerofy($value){

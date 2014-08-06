@@ -161,8 +161,9 @@ class LibDocument{
 		$stmt->bindColumn('id', $rowId);
 		
 		$documents = array();
-		while($stmt->fetch())
+		while($stmt->fetch()){
 			$documents[] = self::fetch($rowId);
+		}
 		return $documents;
 	}
 	
