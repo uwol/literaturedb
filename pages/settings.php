@@ -45,20 +45,27 @@ if(isset($_POST['action']) && $_POST['action'] == 'passwordChange'){
 
 	$user = LibUser::fetch($sessionUser->getId());
 
-	if($oldPassword == "")
+	if($oldPassword == ""){
 		$oldPasswordMissing = true;
-	elseif(!LibUser::checkPassword($oldPassword, $user['password_hash']))
+	}
+	elseif(!LibUser::checkPassword($oldPassword, $user['password_hash'])){
 		$oldPasswordWrong = true;
+	}
 
-	if($newPassword1 == "")
+	if($newPassword1 == ""){
 		$newPassword1Missing = true;
-	elseif(!LibUser::isValidPassword($newPassword1))
+	}
+	elseif(!LibUser::isValidPassword($newPassword1)){
 		$newPasswordIsInvalid = true;
+	}
 
-	if($newPassword2 == "")
+	if($newPassword2 == ""){
 		$newPassword2Missing = true;
-	if($newPassword1 != $newPassword2)
+	}
+	
+	if($newPassword1 != $newPassword2){
 		$newPasswordsNotEqual = true;
+	}
 
 	if(!$newPassword1Missing && !$newPassword2Missing && !$newPasswordIsInvalid && !$newPasswordsNotEqual && !$oldPasswordMissing && !$oldPasswordWrong){
 		$passwordHash = LibUser::encryptPassword($newPassword1);
@@ -68,46 +75,68 @@ if(isset($_POST['action']) && $_POST['action'] == 'passwordChange'){
 		LibGlobal::$notificationTexts[] = 'The password has been changed.';
 	}
 	else{
-		if($oldPasswordMissing)
+		if($oldPasswordMissing){
 			LibGlobal::$errorTexts[] = 'The old password is missing.';
-		if($oldPasswordWrong)
+		}
+		
+		if($oldPasswordWrong){
 			LibGlobal::$errorTexts[] = 'The old password is wrong.';
-		if($newPassword1Missing)
+		}
+		
+		if($newPassword1Missing){
 			LibGlobal::$errorTexts[] = 'The new password is missing.';
-		if($newPassword2Missing)
+		}
+		
+		if($newPassword2Missing){
 			LibGlobal::$errorTexts[] = 'The new second password is missing.';
-		if($newPasswordIsInvalid)
+		}
+		
+		if($newPasswordIsInvalid){
 			LibGlobal::$errorTexts[] = 'The new password is not valid. '. LibUser::getPasswordRequirements();
-		if($newPasswordsNotEqual)
+		}
+		
+		if($newPasswordsNotEqual){
 			LibGlobal::$errorTexts[] = 'The new passwords are not equal.';
+		}
 	}
 
 }
+
 if(isset($_POST['action']) && $_POST['action'] == 'userDetailsChange'){
 	$firstname = LibString::protectXSS(trim($_POST['firstname']));
 	$lastname = LibString::protectXSS(trim($_POST['lastname']));
 	$emailAddress = LibString::protectXSS(trim($_POST['emailAddress']));
 
-	if($emailAddress == "")
+	if($emailAddress == ""){
 		$emailAddressMissing = true;
-	elseif(!LibUser::isValidEmailAddress($emailAddress))
+	}elseif(!LibUser::isValidEmailAddress($emailAddress)){
 		$emailAddressNotValid = true;
-	$user = LibUser::fetchByEmailAddress($emailAddress);
-	if(is_array($user) && isset($user['id']) && is_numeric($user['id']) && $user['id'] != $sessionUser->id)
-		$emailAddressAlreadyUsed = true;
-	//---
-	if($firstname == "")
-		$firstnameMissing = true;
-	if($lastname == "")
-		$lastnameMissing = true;
+	}elseif($emailAddress != ''){
+		$user = LibUser::fetchByEmailAddress($emailAddress);
+
+		if(is_array($user) && isset($user['id']) && is_numeric($user['id']) && $user['id'] != $sessionUser->id){
+			$emailAddressAlreadyUsed = true;
+		}
+	}
+
 	//-------------------------------
+
+	if($firstname == ""){
+		$firstnameMissing = true;
+	}
+
+	if($lastname == ""){
+		$lastnameMissing = true;
+	}
+
+	//-------------------------------
+
 	if(!$emailAddressMissing && !$emailAddressAlreadyUsed && !$emailAddressNotValid && 
 			!$firstnameMissing && !$lastnameMissing){	
 
 		$user = LibUser::fetch($sessionUser->getId());
 
 		$user['lastname'] = $lastname;
-
 		$user['firstname'] = $firstname;
 		$user['emailaddress'] = $emailAddress;
 
@@ -116,23 +145,32 @@ if(isset($_POST['action']) && $_POST['action'] == 'userDetailsChange'){
 		LibGlobal::$notificationTexts[] = 'The user details have been changed.';
 	}
 	else{
-		if($emailAddressMissing)
+		if($emailAddressMissing){
 			LibGlobal::$errorTexts[] = 'The email address is missing.';
-		if($emailAddressAlreadyUsed)
-			LibGlobal::$errorTexts[] = 'The email address is already used by another user.';
-		if($emailAddressNotValid)
-			LibGlobal::$errorTexts[] = 'The email address is not valid.';
-		if($firstnameMissing)
-			LibGlobal::$errorTexts[] = 'The firstname is missing.';
-		if($lastnameMissing)
-			LibGlobal::$errorTexts[] = 'The lastname is missing.';
-	}
+		}
 
+		if($emailAddressAlreadyUsed){
+			LibGlobal::$errorTexts[] = 'The email address is already used by another user.';
+		}
+
+		if($emailAddressNotValid){
+			LibGlobal::$errorTexts[] = 'The email address is not valid.';
+		}
+
+		if($firstnameMissing){
+			LibGlobal::$errorTexts[] = 'The firstname is missing.';
+		}
+
+		if($lastnameMissing){
+			LibGlobal::$errorTexts[] = 'The lastname is missing.';
+		}
+	}
 }
 
 if(isset($_POST['action']) && $_POST['action'] == 'closeAccount' && isset($_POST['password'])){
 	if(!$sessionUser->isAdmin()){ //admins cannot be deleted
 		$user = LibUser::fetch($sessionUser->getId());
+
 		if(LibUser::checkPassword($_POST['password'], $user['password_hash'])){
 			LibRouter::user_delete($sessionUser->id, $sessionUser->getUserAddress());
 			LibGlobal::$notificationTexts[] = 'Your user account has been deleted.';
@@ -140,11 +178,13 @@ if(isset($_POST['action']) && $_POST['action'] == 'closeAccount' && isset($_POST
 			echo LibString::getNotificationBoxText();
 			exit();
 		}
-		else
-			LibGlobal::$errorTexts[] = 'Your user account has not been deleted because the password is wrong.';
+		else{
+			LibGlobal::$errorTexts[] = 'Your user account has not been deleted because the password is incorrect.';
+		}
 	}
-	else
+	else{
 		LibGlobal::$errorTexts[] = 'Your user account cannot be deleted because you are an admin.';
+	}
 }
 
 

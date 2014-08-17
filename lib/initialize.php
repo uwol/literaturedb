@@ -39,16 +39,19 @@ LibDb::connect();
 /**
 * Authentication
 */
-if(isset($_SESSION['sessionUser']))
+if(isset($_SESSION['sessionUser'])){
 	$sessionUser =& $_SESSION['sessionUser'];
-else
+}
+else{
 	$sessionUser = new LibUser();
+}
 
 if(isset($_REQUEST['loginUsername']) && isset($_REQUEST['loginPassword'])){
 	$_SESSION['sessionUser'] = new LibUser();
 	$sessionUser =& $_SESSION['sessionUser'];
 	$sessionUser->login($_REQUEST['loginUsername'], $_REQUEST['loginPassword']);
 	$_SESSION['selectedUserAddresses'] = array($sessionUser->getUserAddress());
+
 	LibCronjobs::cleanDb();
 }
 

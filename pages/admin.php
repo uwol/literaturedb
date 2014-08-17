@@ -24,9 +24,36 @@ if(!$sessionUser->isLoggedin() || !$sessionUser->isAdmin())
 */
 if(isset($_GET['action']) && $_GET['action'] == 'activate' && isset($_GET['userId']) && is_numeric($_GET['userId'])){
 	$user = LibUser::fetch($_GET['userId']);
+
 	if($user['id'] != ''){
 		$user['activated'] = 1;
 		LibUser::save($user);
+
+		if($user['emailaddress'] != ''){		
+			$text = "The user account " . $user['username'] . " has been activated.";
+
+			require_once("lib/thirdparty/phpmailer/class.phpmailer.php");
+
+			$mail = new PHPMailer();
+			$mail->AddAddress($user['emailaddress']);
+			$mail->Subject = '[literaturedb] Activation for: '.$user['username'];
+			$mail->Body = $text;
+			$mail->AddReplyTo(LibConfig::$emailRegistration);
+			$mail->CharSet = "UTF-8";
+
+			/*
+			* Use a smtp relay
+			*/
+			if(LibConfig::$smtpHost != ''){
+				$mail->IsSMTP();
+				$mail->SMTPAuth = true;
+				$mail->Host = LibConfig::$smtpHost;
+				$mail->Username = LibConfig::$smtpUsername;
+				$mail->Password = LibConfig::$smtpPassword;
+			}
+
+			$mail->Send();
+		}
 	}
 }
 elseif(isset($_GET['action']) && $_GET['action'] == 'deactivate' && isset($_GET['userId']) && is_numeric($_GET['userId'])){
@@ -48,7 +75,7 @@ elseif(isset($_POST['action']) && $_POST['action'] == 'delete' &&
 			LibGlobal::$notificationTexts[] = 'The user account has been deleted.';
 		}
 		else
-			LibGlobal::$errorTexts[] = 'The user account has not been deleted because you typed in a wrong password.';
+			LibGlobal::$errorTexts[] = 'The user account has not been deleted because you typed in an incorrect password.';
 	}
 	else
 		LibGlobal::$errorTexts[] = 'The user account cannot be deleted because the user is an admin.';
@@ -128,10 +155,12 @@ foreach(LibUser::fetchAllOrderByActivated($sessionUser->getUserAddress()) as $us
 	}
 
 	echo '<td style="text-align:center">';
-	if(!$user['is_admin'])
+	if(!$user['is_admin']){
 		echo '<a href="index.php?pid=literaturedb_admin&amp;action=delete&amp;userId=' .LibString::protectXSS($user['id']). '" onclick="return confirm(\'Are you sure you want to DELETE this user account?\')"><img src="img/icons/cross.png" alt="delete"/></a>';
-	else
+	}
+	else{
 		echo 'admin';
+	}
 	echo '</td>';
 	
 	echo '</tr>';

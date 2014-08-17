@@ -66,7 +66,6 @@ $passwordIsInvalid = false;
 $passwordsNotEqual = false;
 
 
-
 if(isset($_POST['action']) && $_POST['action'] == 'register'){
 	if($username == "")
 		$usernameMissing = true;
@@ -106,7 +105,6 @@ if(isset($_POST['action']) && $_POST['action'] == 'register'){
 			!$firstnameMissing && !$lastnameMissing  && 
 			!$password1Missing && !$password2Missing && !$passwordIsInvalid && !$passwordsNotEqual){ //valid data?
 		$registrationDataComplete = true;
-		require_once("lib/thirdparty/phpmailer/class.phpmailer.php");
 		
 		$passwordHash = LibUser::encryptPassword($password1);
 		
@@ -119,18 +117,18 @@ if(isset($_POST['action']) && $_POST['action'] == 'register'){
 		$user['activated'] = (in_array($username, LibConfig::$admins)) ? 1 : 0;
 		LibUser::save($user);
 		
-		$text = 'A registration request for ' .LibConfig::$sitePath. ' has been sent from 
-	
-	' . $firstname . ' ' . $lastname . ' 
-	username: ' . $username . ' 
-	email address: ' . $emailAddress . ' 
-	
-Please check the identity of this person and activate him.';
-	
+		$text = "A registration request for " .LibConfig::$sitePath. " has been sent from \n\n" . 
+				$firstname . " " . $lastname . " \n".
+				"username: " . $username . " \n".
+				"email address: " . $emailAddress . " \n\n".
+				"Please check the identity of this person and activate the account.";
+
+		require_once("lib/thirdparty/phpmailer/class.phpmailer.php");
+
 		$mail = new PHPMailer();
 		$mail->AddAddress(LibConfig::$emailRegistration);
 		//$mail->FromName = $emailAddress;
-		$mail->Subject = '[literaturedb] Registration from : '.$emailAddress;
+		$mail->Subject = '[literaturedb] Registration for: '.$emailAddress;
 		$mail->Body = $text;
 		$mail->AddReplyTo($emailAddress);
 		$mail->CharSet = "UTF-8";
@@ -146,8 +144,9 @@ Please check the identity of this person and activate him.';
 			$mail->Password = LibConfig::$smtpPassword;
 		}
 		
-		if($mail->Send())		
+		if($mail->Send()){
 			$mailSent = true;
+		}
 	}
 	else{ //invalid data
 		if($usernameMissing)
@@ -188,35 +187,30 @@ echo LibString::getErrorBoxText();
 
 echo '<div id="login_container">';
 
-if(!$registrationDataComplete){ //Problem at the registration information
+if(!$registrationDataComplete){ // problem with registration information
 	echo '<h1>Registration</h1>';
 	
 	echo '<form method="post" action="index.php?pid=literaturedb_register">';
 	echo '<fieldset>';
 	echo '<input type="hidden" name="action" value="register" />';
-	
 	echo '<label>username<br /><input type="text" name="username" size="25" value="' .$username. '" ' .errorStyle($usernameMissing || $usernameNotValid || $usernameAlreadyUsed). '/></label>';
-	
 	echo '<label>email address<br /><input type="text" name="emailAddress" size="25" value="' .$emailAddress. '" ' .errorStyle($emailAddressMissing || $emailAddressNotValid || $emailAddressAlreadyUsed). '/></label>';
-
 	echo '<label>password<br /><input type="password" name="password1" size="25" value="" ' .errorStyle($password1Missing || $passwordIsInvalid || $passwordsNotEqual). '/></label>';
-
 	echo '<label>password (repeat)<br /><input type="password" name="password2" size="25" value="" ' .errorStyle($password2Missing || $passwordIsInvalid || $passwordsNotEqual). '/></label>';
-
 	echo '<label>firstname<br /><input type="text" name="firstname" size="25" value="' .$firstname. '" ' .errorStyle($firstnameMissing). '/></label>';
-	
 	echo '<label>lastname<br /><input type="text" name="lastname" size="25" value="' .$lastname. '" ' .errorStyle($lastnameMissing). '/></label>';
-
 	echo '<input type="submit" value="Register" />';
 	echo '<p style="margin-bottom:0"><a href="index.php">Back to login</a></p>';
 	echo '</fieldset>';
 	echo '</form>';
 }
-else{ //registration OK
-	if($mailSent)
+else{ // registration OK
+	if($mailSent){
 		echo "<h2>Registration request sent</h2><p>Your registration request has been sent to the administrator of this literature database.</p><p>A notification will be sent to your email address from the administrator, when the account is activated.</p>";
-	else
+	}
+	else{
 		echo "<h2>Error</h2>Your registration request could not be sent. Please contact ". LibConfig::$emailRegistration . ' directly.';
+	}
 	echo '<p style="margin-bottom:0"><a href="index.php">Back to login</a></p>';
 }
 echo '</div>';
