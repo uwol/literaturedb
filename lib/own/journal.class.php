@@ -21,8 +21,8 @@ class LibJournal{
 		$likeName = $beginning . '%';
 	
 		$stmt = LibDb::prepare('SELECT * FROM literaturedb_journal WHERE user_id = :user_id AND name LIKE :name ORDER BY name');
-		$stmt->bindParam('user_id', $userId, PDO::PARAM_INT);
-		$stmt->bindParam('name', $likeName);
+		$stmt->bindValue('user_id', $userId, PDO::PARAM_INT);
+		$stmt->bindValue('name', $likeName);
 		$stmt->execute();
 
 		$journals = array();

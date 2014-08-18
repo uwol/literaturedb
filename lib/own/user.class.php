@@ -62,10 +62,10 @@ class LibUser{
 	
 	static function fetchAllActivatedContaining($name){
 		$stmt = LibDb::prepare('SELECT * FROM literaturedb_sys_user WHERE activated = 1 AND (firstname LIKE :firstname OR lastname LIKE :lastname OR username LIKE :username OR emailaddress LIKE :emailaddress) LIMIT 0,50');
-		$stmt->bindParam(':firstname', '%'.$name.'%');
-		$stmt->bindParam(':lastname', '%'.$name.'%');
-		$stmt->bindParam(':username', '%'.$name.'%');
-		$stmt->bindParam(':emailaddress', '%'.$name.'%');
+		$stmt->bindValue(':firstname', '%'.$name.'%');
+		$stmt->bindValue(':lastname', '%'.$name.'%');
+		$stmt->bindValue(':username', '%'.$name.'%');
+		$stmt->bindValue(':emailaddress', '%'.$name.'%');
 		$stmt->execute();
 		
 		$users = array();
@@ -77,7 +77,7 @@ class LibUser{
 	
 	static function fetch($id){
 		$stmt = LibDb::prepare('SELECT * FROM literaturedb_sys_user WHERE id = :id');
-		$stmt->bindParam(':id', $id, PDO::PARAM_INT);
+		$stmt->bindValue(':id', $id, PDO::PARAM_INT);
 		$stmt->execute();
 		
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -91,7 +91,7 @@ class LibUser{
 			$username = self::getLocalPart($userAddress);
 			
 			$stmt = LibDb::prepare('SELECT * FROM literaturedb_sys_user WHERE username = :username');
-			$stmt->bindParam(':username', $username);
+			$stmt->bindValue(':username', $username);
 			$stmt->execute();
 
 			$row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -101,7 +101,7 @@ class LibUser{
 	
 	static function fetchByEmailAddress($emailAddress){
 		$stmt = LibDb::prepare('SELECT * FROM literaturedb_sys_user WHERE emailaddress = :emailaddress');
-		$stmt->bindParam(':emailaddress', $emailAddress);
+		$stmt->bindValue(':emailaddress', $emailAddress);
 		$stmt->execute();
 		
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -141,32 +141,32 @@ class LibUser{
 		$cleanActivated = trim($user['activated']);
 
 		$stmt = LibDb::prepare('SELECT COUNT(*) AS number FROM literaturedb_sys_user WHERE id = :id');
-		$stmt->bindParam(':id', $user['id'], PDO::PARAM_INT);
+		$stmt->bindValue(':id', $user['id'], PDO::PARAM_INT);
 		$stmt->execute();
 		$stmt->bindColumn('number', $count);
 		$stmt->fetch();
 		
 		if($count > 0){
 			$stmt = LibDb::prepare('UPDATE literaturedb_sys_user SET firstname = :firstname, lastname = :lastname, username = :username, emailaddress = :emailaddress, password_hash = :password_hash, activated = :activated WHERE id = :id');
-			$stmt->bindParam(':firstname', $cleanFirstname);
-			$stmt->bindParam(':lastname', $cleanLastname);
-			$stmt->bindParam(':username', $cleanUsername);
-			$stmt->bindParam(':emailaddress', $cleanEmailAddress);
-			$stmt->bindParam(':password_hash', $cleanPasswordHash);
-			$stmt->bindParam(':activated', $cleanActivated, PDO::PARAM_BOOL);
-			$stmt->bindParam(':id', $user['id'], PDO::PARAM_INT);
+			$stmt->bindValue(':firstname', $cleanFirstname);
+			$stmt->bindValue(':lastname', $cleanLastname);
+			$stmt->bindValue(':username', $cleanUsername);
+			$stmt->bindValue(':emailaddress', $cleanEmailAddress);
+			$stmt->bindValue(':password_hash', $cleanPasswordHash);
+			$stmt->bindValue(':activated', $cleanActivated, PDO::PARAM_BOOL);
+			$stmt->bindValue(':id', $user['id'], PDO::PARAM_INT);
 			$stmt->execute();
 			
 			return $user['id'];
 		}
 		else{
 			$stmt = LibDb::prepare('INSERT INTO literaturedb_sys_user (firstname, lastname, username, emailaddress, password_hash, activated) VALUES (:firstname, :lastname, :username, :emailaddress, :password_hash, :activated)');
-			$stmt->bindParam(':firstname', $cleanFirstname);
-			$stmt->bindParam(':lastname', $cleanLastname);
-			$stmt->bindParam(':username', $cleanUsername);
-			$stmt->bindParam(':emailaddress', $cleanEmailAddress);
-			$stmt->bindParam(':password_hash', $cleanPasswordHash);
-			$stmt->bindParam(':activated', $cleanActivated, PDO::PARAM_BOOL);
+			$stmt->bindValue(':firstname', $cleanFirstname);
+			$stmt->bindValue(':lastname', $cleanLastname);
+			$stmt->bindValue(':username', $cleanUsername);
+			$stmt->bindValue(':emailaddress', $cleanEmailAddress);
+			$stmt->bindValue(':password_hash', $cleanPasswordHash);
+			$stmt->bindValue(':activated', $cleanActivated, PDO::PARAM_BOOL);
 			$stmt->execute();
 	
 			return LibDb::insertId();
@@ -182,7 +182,7 @@ class LibUser{
 		LibCronjobs::cleanDb();
 		
 		$stmt = LibDb::prepare('DELETE FROM literaturedb_sys_user WHERE id = :id');
-		$stmt->bindParam(':id', $userId, PDO::PARAM_INT);
+		$stmt->bindValue(':id', $userId, PDO::PARAM_INT);
 		$stmt->execute();
 	}
 	
@@ -401,7 +401,7 @@ class LibUser{
 		}
 		
 		$stmt = LibDb::prepare("SELECT * FROM literaturedb_sys_user WHERE username = :username");
-		$stmt->bindParam(':username', $username);
+		$stmt->bindValue(':username', $username);
 		$stmt->execute();
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -428,7 +428,7 @@ class LibUser{
 		
 		//6. too many login tries
 		$stmt = LibDb::prepare("SELECT COUNT(*) AS number FROM literaturedb_sys_event WHERE user_id = :user_id AND type = 2 AND DATEDIFF(NOW(), date) = 0");
-		$stmt->bindParam(':user_id', $user['id'], PDO::PARAM_INT);
+		$stmt->bindValue(':user_id', $user['id'], PDO::PARAM_INT);
 		$stmt->execute();
 		$stmt->bindColumn('number', $numberOfMistakenLoginsToday);
 		$stmt->fetch();
@@ -459,9 +459,9 @@ class LibUser{
 		$errorType = 2;
 		
 		$stmt = LibDb::prepare("INSERT INTO literaturedb_sys_event (user_id, type, date, ipaddress) VALUES (:user_id, :type, NOW(), :ipaddress)");
-		$stmt->bindParam(':user_id', $user['id'], PDO::PARAM_INT);
-		$stmt->bindParam(':type', $errorType, PDO::PARAM_INT);
-		$stmt->bindParam(':ipaddress', $_SERVER['REMOTE_ADDR']);
+		$stmt->bindValue(':user_id', $user['id'], PDO::PARAM_INT);
+		$stmt->bindValue(':type', $errorType, PDO::PARAM_INT);
+		$stmt->bindValue(':ipaddress', $_SERVER['REMOTE_ADDR']);
 		$stmt->execute();
 	
 		LibGlobal::$errorTexts[] = "The username or password is wrong.";

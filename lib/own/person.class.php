@@ -19,7 +19,7 @@ along with literaturedb. If not, see <http://www.gnu.org/licenses/>.
 class LibPerson{
 	static function fetchAllAuthorsForDocument($documentId){
 		$stmt = LibDb::prepare('SELECT * FROM literaturedb_asso_document_author, literaturedb_person WHERE literaturedb_asso_document_author.person_id = literaturedb_person.id AND literaturedb_asso_document_author.document_id = :document_id ORDER BY literaturedb_asso_document_author.position ASC');
-		$stmt->bindParam(':document_id', $documentId, PDO::PARAM_INT);
+		$stmt->bindValue(':document_id', $documentId, PDO::PARAM_INT);
 		$stmt->execute();
 
 		$authors = array();
@@ -31,7 +31,7 @@ class LibPerson{
 	
 	static function fetchAllEditorsForDocument($documentId){
 		$stmt = LibDb::prepare('SELECT * FROM literaturedb_asso_document_editor, literaturedb_person WHERE literaturedb_asso_document_editor.person_id = literaturedb_person.id AND literaturedb_asso_document_editor.document_id = :document_id ORDER BY literaturedb_asso_document_editor.position ASC');
-		$stmt->bindParam(':document_id', $documentId, PDO::PARAM_INT);
+		$stmt->bindValue(':document_id', $documentId, PDO::PARAM_INT);
 		$stmt->execute();
 		
 		$editors = array();
@@ -51,9 +51,9 @@ class LibPerson{
 			$internalOffset = (int) $offset;
 		
 		$stmt = LibDb::prepare('SELECT COUNT(*) AS weight_absolute, literaturedb_person.id, literaturedb_person.firstname, literaturedb_person.prefix, literaturedb_person.lastname, literaturedb_person.suffix, literaturedb_person.user_id FROM literaturedb_person, literaturedb_asso_document_author, literaturedb_document WHERE literaturedb_document.id = literaturedb_asso_document_author.document_id AND literaturedb_person.id = literaturedb_asso_document_author.person_id AND literaturedb_person.user_id = :user_id GROUP BY literaturedb_person.id ORDER BY weight_absolute DESC LIMIT :offset,:limit');
-		$stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
-		$stmt->bindParam(':offset', $internalOffset, PDO::PARAM_INT);
-		$stmt->bindParam(':limit', $internalLimit, PDO::PARAM_INT);
+		$stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+		$stmt->bindValue(':offset', $internalOffset, PDO::PARAM_INT);
+		$stmt->bindValue(':limit', $internalLimit, PDO::PARAM_INT);
 		$stmt->execute();
 		
 		$authors = array();
@@ -69,9 +69,9 @@ class LibPerson{
 		$likeLastname = $beginning . '%';
 	
 		$stmt = LibDb::prepare('SELECT literaturedb_person.id, literaturedb_person.firstname, literaturedb_person.prefix, literaturedb_person.lastname, literaturedb_person.suffix, literaturedb_person.user_id FROM literaturedb_person WHERE user_id = :user_id AND (lastname LIKE :lastname OR firstname LIKE :firstname) ORDER BY lastname, firstname');
-		$stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
-		$stmt->bindParam(':firstname', $likeFirstname);
-		$stmt->bindParam(':lastname', $likeLastname);
+		$stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+		$stmt->bindValue(':firstname', $likeFirstname);
+		$stmt->bindValue(':lastname', $likeLastname);
 		$stmt->execute();
 		
 		$persons = array();
@@ -85,7 +85,7 @@ class LibPerson{
 	
 	static function fetch($id){
 		$stmt = LibDb::prepare('SELECT * FROM literaturedb_person WHERE id = :id');
-		$stmt->bindParam(':id', $id, PDO::PARAM_INT);
+		$stmt->bindValue(':id', $id, PDO::PARAM_INT);
 		$stmt->execute();
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -99,29 +99,29 @@ class LibPerson{
 		$cleanSuffix = trim($person['suffix']);
 
 		$stmt = LibDb::prepare('SELECT COUNT(*) AS number FROM literaturedb_person WHERE id = :id');
-		$stmt->bindParam(':id', $person['id'], PDO::PARAM_INT);
+		$stmt->bindValue(':id', $person['id'], PDO::PARAM_INT);
 		$stmt->execute();
 		$stmt->bindColumn('number', $count);
 		$stmt->fetch();
 	
 		if($count > 0){
 			$stmt = LibDb::prepare('UPDATE literaturedb_person SET firstname = :firstname, prefix = :prefix, lastname = :lastname, suffix = :suffix WHERE id = :id');
-			$stmt->bindParam(':firstname', $cleanFirstname);
-			$stmt->bindParam(':prefix', $cleanPrefix);
-			$stmt->bindParam(':lastname', $cleanLastname);
-			$stmt->bindParam(':suffix', $cleanSuffix);
-			$stmt->bindParam(':id', $person['id'], PDO::PARAM_INT);
+			$stmt->bindValue(':firstname', $cleanFirstname);
+			$stmt->bindValue(':prefix', $cleanPrefix);
+			$stmt->bindValue(':lastname', $cleanLastname);
+			$stmt->bindValue(':suffix', $cleanSuffix);
+			$stmt->bindValue(':id', $person['id'], PDO::PARAM_INT);
 			$stmt->execute();
 
 			return $person['id'];
 		}
 		else{
 			$stmt = LibDb::prepare('INSERT INTO literaturedb_person (firstname, prefix, lastname, suffix, user_id) VALUES (:firstname, :prefix, :lastname, :suffix, :user_id)');
-			$stmt->bindParam(':firstname', $cleanFirstname);
-			$stmt->bindParam(':prefix', $cleanPrefix);
-			$stmt->bindParam(':lastname', $cleanLastname);
-			$stmt->bindParam(':suffix', $cleanSuffix);
-			$stmt->bindParam(':id', $person['user_id'], PDO::PARAM_INT);
+			$stmt->bindValue(':firstname', $cleanFirstname);
+			$stmt->bindValue(':prefix', $cleanPrefix);
+			$stmt->bindValue(':lastname', $cleanLastname);
+			$stmt->bindValue(':suffix', $cleanSuffix);
+			$stmt->bindValue(':id', $person['user_id'], PDO::PARAM_INT);
 			$stmt->execute();
 
 			return LibDb::insertId();

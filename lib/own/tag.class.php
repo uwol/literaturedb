@@ -27,9 +27,9 @@ class LibTag{
 			$internalOffset = (int) $offset;
 		
 		$stmt = LibDb::prepare('SELECT COUNT(name) AS weight_absolute, literaturedb_tag.name, literaturedb_tag.id, literaturedb_tag.user_id FROM literaturedb_tag, literaturedb_asso_document_tag, literaturedb_document WHERE literaturedb_asso_document_tag.document_id = literaturedb_document.id AND literaturedb_asso_document_tag.tag_id = literaturedb_tag.id AND literaturedb_tag.user_id = :user_id GROUP BY literaturedb_tag.name ORDER BY weight_absolute DESC LIMIT :offset,:limit');
-		$stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
-		$stmt->bindParam(':offset', $internalOffset, PDO::PARAM_INT);
-		$stmt->bindParam(':limit', $internalLimit, PDO::PARAM_INT);
+		$stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+		$stmt->bindValue(':offset', $internalOffset, PDO::PARAM_INT);
+		$stmt->bindValue(':limit', $internalLimit, PDO::PARAM_INT);
 		$stmt->execute();
 
 		$tags = array();
@@ -45,8 +45,8 @@ class LibTag{
 		$likeTag = $beginning . '%';
 	
 		$stmt = LibDb::prepare('SELECT COUNT(name) AS weight_absolute, literaturedb_tag.name, literaturedb_tag.id, literaturedb_tag.user_id FROM literaturedb_tag, literaturedb_asso_document_tag, literaturedb_document WHERE literaturedb_asso_document_tag.document_id = literaturedb_document.id AND literaturedb_asso_document_tag.tag_id = literaturedb_tag.id AND literaturedb_tag.user_id = :user_id AND literaturedb_tag.name LIKE :tag GROUP BY literaturedb_tag.name ORDER BY literaturedb_tag.name');
-		$stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
-		$stmt->bindParam(':tag', $likeTag);
+		$stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+		$stmt->bindValue(':tag', $likeTag);
 		$stmt->execute();
 
 		$tags = array();
@@ -58,7 +58,7 @@ class LibTag{
 	
 	static function fetchAllForDocument($documentId){
 		$stmt = LibDb::prepare('SELECT literaturedb_tag.name, literaturedb_tag.id, literaturedb_tag.user_id FROM literaturedb_tag, literaturedb_asso_document_tag WHERE literaturedb_asso_document_tag.tag_id = literaturedb_tag.id AND literaturedb_asso_document_tag.document_id = :document_id ORDER BY literaturedb_tag.name');
-		$stmt->bindParam(':document_id', $documentId, PDO::PARAM_INT);
+		$stmt->bindValue(':document_id', $documentId, PDO::PARAM_INT);
 		$stmt->execute();
 		
 		$tags = array();

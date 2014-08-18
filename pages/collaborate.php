@@ -24,7 +24,7 @@ if(!$sessionUser->isLoggedin())
 $(function (){
   $('#users').tagSuggest({
     url: '/api.php?action=user_fetchAllActivatedContaining&auth=session',
-    delay: 200
+    delay: 1200
   });
 });
 </script>
@@ -73,8 +73,9 @@ echo '<table>';
 
 $shares = LibRouter::share_fetchAllByLocalUserId($sessionUser->getId(), $sessionUser->getUserAddress());
 
-if(count($shares) > 0)
+if(count($shares) > 0){
 	echo '<tr><td></td><td style="text-align:center">follow <br /><img src="img/icons/connect.png" alt="follow" /></td><td style="text-align:center">share <br /><img src="img/icons/lock_open.png" alt="share" /></td></tr>';
+}
 
 foreach($shares as $share){
 	echo '<tr>';
@@ -101,8 +102,9 @@ if(count($shares) > 0){
 
 $shares = LibRouter::share_fetchAllByLocalUserId($sessionUser->getId(), $sessionUser->getUserAddress());
 $smallOrgaInterface = true;
-if(count($shares) > 20)
+if(count($shares) > 20){
 	$smallOrgaInterface = false;
+}
 
 if($smallOrgaInterface){ //small organization?
 	echo '<form action="index.php?pid=literaturedb_collaborate" method="post"><fieldset style="border: 0px">';
