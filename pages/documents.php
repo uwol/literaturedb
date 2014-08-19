@@ -244,19 +244,36 @@ if((!isset($_GET['tag']) ||$_GET['tag'] == '') && $searchString == ''){
 	if(count($shares) > 0){
 		echo '<h2>Follow</h2>';
 		echo '<form action="index.php?pid=literaturedb_documents" method="post"><fieldset>';
-		echo '<select name="selectedUserAddress">';
+		echo '<select name="selectedUserAddress" onchange="this.form.submit()">';
 
-		echo '<option>' .LibString::protectXSS($sessionUser->getUsername()). '</option>';	
+		// option for showing documents of all users
+		$selectString = '';
+		if(allSharesIsSelected()){
+			$selectString = ' selected="selected" ';
+		}
+		
+		echo '<option ' .$selectString. ' value="all_users">all users</option>';	
 
+		// option for own user
+		$selectString = '';
+		if(!allSharesIsSelected() && in_array(LibUser::buildCanonicalUserAddress($sessionUser->getUsername()), LibGlobal::$selectedUserAddresses)){
+			$selectString = ' selected="selected" ';
+		}
+		
+		echo '<option ' .$selectString. '>' .LibString::protectXSS($sessionUser->getUsername()). '</option>';
+
+		// options for shares
 		foreach($shares as $share){
 			$selectString = '';
-			if(in_array(LibUser::buildCanonicalUserAddress($share['remote_user_address']), LibGlobal::$selectedUserAddresses))
+			if(!allSharesIsSelected() && in_array(LibUser::buildCanonicalUserAddress($share['remote_user_address']), LibGlobal::$selectedUserAddresses)){
 				$selectString = ' selected="selected" ';
+			}
 			echo '<option ' .$selectString. '>' .LibString::protectXSS($share['remote_user_address']). '</option>';	
 		}
 		
 		echo '</select>';
-		echo ' <input type="submit" value="show" />';
+		echo ' <input type="submit" value="show" /> ';
+		echo '<img src="img/icons/lightbulb.png" alt="?" title="&quot;all users&quot; can be inperformant" style="margin:0;vertical-align:middle"/>';
 		echo '</fieldset></form>';
 	}
 }
@@ -299,5 +316,10 @@ if((!isset($_GET['tag']) || $_GET['tag'] == '') && $searchString == ''){
 	
 	if(is_array($authors) && count($authors) > 0)
 		echo '<div style="text-align:center"><a id="loadAuthors" href="index.php?pid=literaturedb_documents&amp;limitAuthors=' . count($authors) * 2 . '">show more</a></div>';
+}
+
+
+function allSharesIsSelected(){
+	return count(LibGlobal::$selectedUserAddresses) > 1;
 }
 ?>

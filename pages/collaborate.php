@@ -96,6 +96,7 @@ foreach($shares as $share){
 	echo '</tr>';
 }
 
+// divider
 if(count($shares) > 0){
 	echo '<tr><td colspan="5" style="border-top:1px solid black"></td></tr>';
 }
@@ -106,45 +107,42 @@ if(count($shares) > 20){
 	$smallOrgaInterface = false;
 }
 
-if($smallOrgaInterface){ //small organization?
-	echo '<form action="index.php?pid=literaturedb_collaborate" method="post"><fieldset style="border: 0px">';
-	echo '<tr>';
-	echo '<td>';
-	echo '<input type="hidden" name="action" value="saveShare" />';
-	echo '<input type="hidden" name="following" value="1" />';
-	echo '<input type="hidden" name="sharing" value="1" />';
-	echo '<input type="text" name="remoteUserAddress" size="40" value="username@someremotedomain.org" /> ';
-	echo '</td>';
-	echo '<td></td><td></td>';
-	echo '<td><input type="image" src="img/icons/add.png" /></td>';
-	echo '</tr>';
-	echo '</fieldset></form>';
-
+// small organization?
+if($smallOrgaInterface){
+	// all users not added as shares, yet
 	foreach(LibRouter::user_fetchAll($sessionUser->getUserAddress()) as $user){
 		if(($user['activated'] || $user['is_admin']) && !array_key_exists($user['username'], $shares) && $user['username'] != $sessionUser->username){
-			echo '<tr><td>'. LibString::protectXSS($user['username']) .'</td>';
+			echo '<tr>';
+			echo '<td>'. LibString::protectXSS($user['username']) .'</td>';
 			echo '<td></td><td></td>';
 			echo '<td>';
 			echo '<a href="index.php?pid=literaturedb_collaborate&amp;action=saveShare&amp;remoteUserAddress=' .LibString::protectXSS($user['username']). '&amp;following=1&amp;sharing=1"><img src="img/icons/add.png" alt="add"/></a>';
-			echo '</td></tr>';
+			echo '</td>';
+			echo '</tr>';
 		}
 	}
 }
-else{
-	echo '<form action="index.php?pid=literaturedb_collaborate" method="post"><fieldset style="border: 0px">';
-	echo '<tr>';
-	echo '<td>';
-	echo '<input type="hidden" name="action" value="saveShare" />';
-	echo '<input type="hidden" name="following" value="1" />';
-	echo '<input type="hidden" name="sharing" value="1" />';
-	echo '<input type="text" id="users" name="remoteUserAddress" size="40" value="" /> ';
-	echo '</td>';
-	echo '<td style="text-align:center"><img src="img/icons/lightbulb.png" alt="?" title="External users can be added by typing in their user address. E.g. your user address is '. LibString::protectXSS($sessionUser->getUserAddress()) .'"/></td>';
-	echo '<td></td>';
-	echo '<td><input type="image" src="img/icons/add.png" /></td>';
-	echo '</tr>';
-	echo '</fieldset></form>';
+
+// input for arbitrary user addresses
+echo '<form action="index.php?pid=literaturedb_collaborate" method="post"><fieldset style="border: 0px">';
+echo '<tr>';
+echo '<td>';
+echo '<input type="hidden" name="action" value="saveShare" />';
+echo '<input type="hidden" name="following" value="1" />';
+echo '<input type="hidden" name="sharing" value="1" />';
+	
+$value = '';
+if($smallOrgaInterface){
+	$value = 'username@someremotedomain.org';
 }
+	
+echo '<input type="text" id="users" name="remoteUserAddress" size="40" value="' .$value. '" /> ';
+echo '</td>';
+echo '<td style="text-align:center"><img src="img/icons/lightbulb.png" alt="?" title="External users can be added by typing in their user address. E.g. your user address is '. LibString::protectXSS($sessionUser->getUserAddress()) .'" style="margin:0;vertical-align:middle"/></td>';
+echo '<td></td>';
+echo '<td><input type="image" src="img/icons/add.png" /></td>';
+echo '</tr>';
+echo '</fieldset></form>';
 
 echo '</table>';
 

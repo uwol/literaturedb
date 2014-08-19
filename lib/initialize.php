@@ -67,17 +67,29 @@ LibCronjobs::run();
 */
 if(isset($_POST['selectedUserAddress'])){
 	$selectedUserAddresses = array();
-	//foreach($_POST['selectedUserAddresses'] as $selectedUserAddress)
-	if(!in_array($_POST['selectedUserAddress'], $selectedUserAddresses))
+
+	// if all shares are selected
+	if($_POST['selectedUserAddress'] == 'all_users'){
+		$selectedUserAddresses[] = LibString::protectXSS($sessionUser->getUsername());
+		
+		$shares = LibRouter::share_fetchAllFollowedByLocalUserId($sessionUser->getId(), $sessionUser->getUserAddress());
+		foreach($shares as $share){
+			$selectedUserAddresses[] = LibUser::buildCanonicalUserAddress($share['remote_user_address']);
+		}
+	}elseif(!in_array($_POST['selectedUserAddress'], $selectedUserAddresses)){
 		$selectedUserAddresses[] = LibUser::buildCanonicalUserAddress($_POST['selectedUserAddress']);
+	}
+
 	$_SESSION['selectedUserAddresses'] = $selectedUserAddresses;
 }
 
-if(isset($_SESSION['selectedUserAddresses']))
+if(isset($_SESSION['selectedUserAddresses'])){
 	LibGlobal::$selectedUserAddresses = $_SESSION['selectedUserAddresses'];
+}
 
 
 $pid = '';
-if(isset($_REQUEST['pid']))
+if(isset($_REQUEST['pid'])){
 	$pid = $_REQUEST['pid'];
+}
 ?>

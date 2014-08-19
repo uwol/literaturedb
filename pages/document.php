@@ -437,13 +437,13 @@ if(LibDocument::isValidDocumentAddress($documentAddress)){
 
 			echo '<input type="text" name="date" value="' .LibString::protectXSS($document['date']). '" size="10" /> Date<br />';
 			
-			echo '<div>Authors <img src="img/icons/lightbulb.png" alt="?" title="E.g. &quot;Friedrich August von Hayek and Winston Leonard {Spencer Churchill}&quot;" style="margin:2px 0 0 0"/><br />';
+			echo '<div>Authors <img src="img/icons/lightbulb.png" alt="?" title="E.g. &quot;Friedrich August von Hayek and Winston Leonard {Spencer Churchill}&quot;" style="margin:0;vertical-align:middle"/><br />';
 			echo '<input type="text" name="authors" id="authors" value="' .LibString::getPersonsNameString($document['authors']). '" size="75" /></div>';
 			
 			echo 'Abstract<br />';
 
 			echo '<textarea name="abstract" cols="60" rows="4">' . LibString::protectXSS($document['abstract']) . '</textarea><br />';		
-			echo '<div>Tags <img src="img/icons/lightbulb.png" alt="?" title="E.g. &quot;city newyork webdesign&quot;" style="margin:2px 0 0 0"/>';
+			echo '<div>Tags <img src="img/icons/lightbulb.png" alt="?" title="E.g. &quot;city newyork webdesign&quot;" style="margin:0;vertical-align:middle"/>';
 			$tagNames = array();
 			foreach($document['tags'] as $tag) // !!!!
 
@@ -457,13 +457,13 @@ if(LibDocument::isValidDocumentAddress($documentAddress)){
 			echo '<hr />';
 			
 			echo '<input type="text" name="address" value="' .LibString::protectXSS($document['address']). '" size="40" /> Address<br />';
-			echo '<input type="text" id="booktitle" name="booktitle" value="' .LibString::protectXSS($document['booktitle']). '" size="40" /> Booktitle <img src="img/icons/lightbulb.png" alt="?" title="Used as the conference name in Word 2007 export." /><br />';
+			echo '<input type="text" id="booktitle" name="booktitle" value="' .LibString::protectXSS($document['booktitle']). '" size="40" /> Booktitle <img src="img/icons/lightbulb.png" alt="?" title="Used as the conference name in Word 2007 export." style="margin:0;vertical-align:middle"/><br />';
 			echo '<input type="text" name="chapter" value="' .LibString::protectXSS($document['chapter']). '" size="40" /> Chapter<br />';
 			echo '<input type="text" name="doi" value="' .LibString::protectXSS($document['doi']). '" size="40" /> DOI<br />';
 			echo '<input type="text" name="ean" value="' .LibString::protectXSS($document['ean']). '" size="40" /> Ean<br />';		
 			echo '<input type="text" name="edition" value="' .LibString::protectXSS($document['edition']). '" size="40" /> Edition<br />';
 			
-			echo '<div>Editors <img src="img/icons/lightbulb.png" alt="?" title="E.g. &quot;Friedrich August von Hayek and Winston Leonard {Spencer Churchill}&quot;" style="margin:2px 0 0 0"/><br />';
+			echo '<div>Editors <img src="img/icons/lightbulb.png" alt="?" title="E.g. &quot;Friedrich August von Hayek and Winston Leonard {Spencer Churchill}&quot;" style="margin:0;vertical-align:middle"/><br />';
 			echo '<input type="text" name="editors" id="editors" value="' .LibString::protectXSS(LibString::getPersonsNameString($document['editors'])). '" size="50" /></div>';
 			
 			echo '<input type="text" name="institution" value="' .LibString::protectXSS($document['institution']). '" size="40" /> Institution<br />';
