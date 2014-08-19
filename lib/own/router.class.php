@@ -34,7 +34,6 @@ class LibRouter{
 
 					$documents = array_merge($documents, LibDocument::fetchAll($askedUser['id']));
 				}
-
 			}
 		}
 		return $documents;
@@ -59,9 +58,7 @@ class LibRouter{
 				}
 				else
 					return $askedUserAddress .' does not share documents with you.';
-
 			}
-
 			else{
 				$remoteDocuments = self::remoteCall(
 					LibUser::getDomainPart($askedUserAddress), 
@@ -69,11 +66,9 @@ class LibRouter{
 					'document_fetchLast',
 					array('askedUserAddress' => $askedUserAddress, 'offset' => $offset, 'limit' => $limit));
 				if(is_array($remoteDocuments))
-
 					$documents = array_merge($documents, $remoteDocuments);
 				else
 					return $remoteDocuments;
-
 			}
 		}
 		return $documents;
@@ -186,7 +181,6 @@ class LibRouter{
 	}
 	
 	//@Remote
-
 	static function document_fetchWithAuthor($authorAddress, $askingUserAddress){
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
 
@@ -345,7 +339,6 @@ class LibRouter{
 
 		if(self::document_mayDelete($documentId, $askingUserAddress))
 			return LibDocument::delete($documentId);
-
 	}
 	
 	static function document_mayDelete($documentId, $askingUserAddress){
@@ -353,7 +346,6 @@ class LibRouter{
 		$askingUser = LibUser::fetchByUserAddress($askingUserAddress);
 		if($documentInDb['id'] > 0 && $documentInDb['user_id'] == $askingUser['id'])
 			return true;
-
 		return false;
 	}
 	
@@ -375,7 +367,6 @@ class LibRouter{
 				}
 				else
 					return $askedUserAddress .' does not share tags with you.';
-
 			}
 			else{
 				$remoteTags = self::remoteCall(
@@ -609,7 +600,6 @@ class LibRouter{
 		if($share['local_user_id'] == $askingUser['id'])
 			return true;
 	}
-
 
 	/*
 	* User
