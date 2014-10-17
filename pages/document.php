@@ -513,8 +513,8 @@ else{
 	echo '<form method="post" enctype="multipart/form-data" action="index.php?pid=literaturedb_document">';
 	echo '<fieldset>';
 
-	echo '<p><input type="submit" value="Add a document" /></p>';
 	echo '<p>Append a file (max. ' .calculateMaxFilesize(). ' MB): <input name="file" type="file" size="30" /></p>';
+	echo '<p><input type="submit" value="Add a document" /></p>';
 	
 	echo '<input type="hidden" name="action" value="document_create" />';
 
