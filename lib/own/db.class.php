@@ -31,7 +31,7 @@ class LibDb{
 			}
 		}
 		
-		$dsn = sprintf('mysql:host=%s;port=%s;dbname=%s', 
+		$dsn = sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8', 
 			LibConfig::$mysqlServer,
 			$mysqlPort,
 			LibConfig::$mysqlDb);
