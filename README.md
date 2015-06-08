@@ -3,7 +3,7 @@ literaturedb - the collaborative bibliography tool
 
 literaturedb is a bibliographic management software that helps you organize your literature and bibliographic references for scientific documents. It runs as a PHP web site and provides a collaborative space for storing and sharing documents and references.
 
-For running your own installation of literaturedb you need an web hosting with the following specifications:
+For running your own installation of literaturedb you need a web hosting with the following specifications:
 
 * PHP 5.3 or newer
 * MySQL 4.1 or newer
