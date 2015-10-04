@@ -33,6 +33,7 @@ require_once("own/router.class.php");
 require_once("own/rest.class.php");
 require_once("own/share.class.php");
 require_once("own/view.class.php");
+require_once("own/mime.class.php");
 
 require_once("thirdparty/PasswordHash.php"); //phpass
 ?>
