@@ -26,6 +26,8 @@ if($_GET['mode'] == 'literaturedb_document'){
 	$document = LibRouter::document_fetch($documentAddress, $sessionUser->getUserAddress());
 	
 	$mime = LibMime::determineMime($document['extension']);
+	$extensionString = $document['extension'] != '' ? '.' . $document['extension'] : '';
+	$filename = $document['filename'] . $extensionString;
 
 	/*
 	* disable caching
@@ -35,10 +37,10 @@ if($_GET['mode'] == 'literaturedb_document'){
 	header('Expires: 0');
 		
 	// mime
-	header("Content-Type: " . $mime);
-	header('Content-Disposition: attachment; filename="' .$document['filename'].'.'.$document['extension'] . '"');
-	header("Content-Transfer-Encoding: binary");
-	//header("Content-Length: " . $document['filesize']); //activating this line corrupts the output of some PDF files
+	header('Content-Type: ' . $mime);
+	header('Content-Disposition: attachment; filename="' . $filename . '"');
+	header('Content-Transfer-Encoding: binary');
+	//header('Content-Length: ' . $document['filesize']); //activating this line corrupts the output of some PDF files
 	
 	echo LibRouter::document_fetchFileContents($documentAddress, $sessionUser->getUserAddress());
 }
