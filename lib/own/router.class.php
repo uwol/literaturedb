@@ -257,9 +257,12 @@ class LibRouter{
 				if(self::document_mayFetchFileContents($askedDocumentAddress, $askingUserAddress)){
 					if($document['hash'] != ''){
 						$filePath = LibDocument::getFilePath($document['hash']);
-						//$filename = $document['filename'] . '.' . $document['extension'];
-						//readfile($filePath);
-						return implode('', file($filePath));
+						
+						$handle = fopen($filePath, "rb");
+						$contents = fread($handle, filesize($filePath));
+						fclose($handle);
+						
+						return $contents;
 					}
 				}
 			}
