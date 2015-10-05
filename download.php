@@ -27,15 +27,19 @@ if($_GET['mode'] == 'literaturedb_document'){
 	
 	$mime = LibMime::determineMime($document['extension']);
 
-	header("Pragma: public");
-	header("Expires: 0");
-	header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+	/*
+	* disable caching
+	*/
+	header('Cache-Control: no-cache, no-store, must-revalidate');
+	header('Pragma: no-cache');
+	header('Expires: 0');
+		
+	// mime
 	header("Content-Type: " . $mime);
-	header("Content-Type: application/force-download");
-	header("Content-Type: application/download");
 	header('Content-Disposition: attachment; filename="' .$document['filename'].'.'.$document['extension'] . '"');
 	header("Content-Transfer-Encoding: binary");
 	//header("Content-Length: " . $document['filesize']); //activating this line corrupts the output of some PDF files
+	
 	echo LibRouter::document_fetchFileContents($documentAddress, $sessionUser->getUserAddress());
 }
 ?>
