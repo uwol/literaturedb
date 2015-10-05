@@ -35,13 +35,12 @@ if($_GET['mode'] == 'literaturedb_document'){
 	header('Cache-Control: no-cache, no-store, must-revalidate');
 	header('Pragma: no-cache');
 	header('Expires: 0');
-		
+
 	// mime
 	header('Content-Type: ' . $mime);
 	header('Content-Disposition: attachment; filename="' . $filename . '"');
-	header('Content-Transfer-Encoding: binary');
-	//header('Content-Length: ' . $document['filesize']); //activating this line corrupts the output of some PDF files
-	
+	//header('Content-Length: ' . $document['filesize']);
+
 	echo LibRouter::document_fetchFileContents($documentAddress, $sessionUser->getUserAddress());
 }
 ?>
