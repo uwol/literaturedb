@@ -19,13 +19,14 @@ along with literaturedb. If not, see <http://www.gnu.org/licenses/>.
 class LibJournal{
 	static function fetchNameBeginningWith($beginning, $userId){
 		$likeName = $beginning . '%';
-	
+
 		$stmt = LibDb::prepare('SELECT * FROM literaturedb_journal WHERE user_id = :user_id AND name LIKE :name ORDER BY name');
 		$stmt->bindValue('user_id', $userId, PDO::PARAM_INT);
 		$stmt->bindValue('name', $likeName);
 		$stmt->execute();
 
 		$journals = array();
+
 		while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 			$journal = array();
 			$journal['id'] = $row['id'];
@@ -33,6 +34,7 @@ class LibJournal{
 			$journal['user_id'] = $row['user_id'];
 			$journals[] = $journal;
 		}
+
 		return $journals;
 	}
 }

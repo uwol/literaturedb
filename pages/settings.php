@@ -18,7 +18,7 @@ along with literaturedb. If not, see <http://www.gnu.org/licenses/>.
 
 if(!$sessionUser->isLoggedin())
 	die();
-	
+
 /*
 * Actions
 */
@@ -47,54 +47,51 @@ if(isset($_POST['action']) && $_POST['action'] == 'passwordChange'){
 
 	if($oldPassword == ""){
 		$oldPasswordMissing = true;
-	}
-	elseif(!LibUser::checkPassword($oldPassword, $user['password_hash'])){
+	} elseif(!LibUser::checkPassword($oldPassword, $user['password_hash'])){
 		$oldPasswordWrong = true;
 	}
 
 	if($newPassword1 == ""){
 		$newPassword1Missing = true;
-	}
-	elseif(!LibUser::isValidPassword($newPassword1)){
+	} elseif(!LibUser::isValidPassword($newPassword1)){
 		$newPasswordIsInvalid = true;
 	}
 
 	if($newPassword2 == ""){
 		$newPassword2Missing = true;
 	}
-	
+
 	if($newPassword1 != $newPassword2){
 		$newPasswordsNotEqual = true;
 	}
 
 	if(!$newPassword1Missing && !$newPassword2Missing && !$newPasswordIsInvalid && !$newPasswordsNotEqual && !$oldPasswordMissing && !$oldPasswordWrong){
 		$passwordHash = LibUser::encryptPassword($newPassword1);
-	
+
 		$user['password_hash'] = $passwordHash;
 		LibUser::save($user);
 		LibGlobal::$notificationTexts[] = 'The password has been changed.';
-	}
-	else{
+	} else {
 		if($oldPasswordMissing){
 			LibGlobal::$errorTexts[] = 'The old password is missing.';
 		}
-		
+
 		if($oldPasswordWrong){
 			LibGlobal::$errorTexts[] = 'The old password is wrong.';
 		}
-		
+
 		if($newPassword1Missing){
 			LibGlobal::$errorTexts[] = 'The new password is missing.';
 		}
-		
+
 		if($newPassword2Missing){
 			LibGlobal::$errorTexts[] = 'The new second password is missing.';
 		}
-		
+
 		if($newPasswordIsInvalid){
 			LibGlobal::$errorTexts[] = 'The new password is not valid. '. LibUser::getPasswordRequirements();
 		}
-		
+
 		if($newPasswordsNotEqual){
 			LibGlobal::$errorTexts[] = 'The new passwords are not equal.';
 		}
@@ -109,9 +106,9 @@ if(isset($_POST['action']) && $_POST['action'] == 'userDetailsChange'){
 
 	if($emailAddress == ""){
 		$emailAddressMissing = true;
-	}elseif(!LibUser::isValidEmailAddress($emailAddress)){
+	} elseif(!LibUser::isValidEmailAddress($emailAddress)){
 		$emailAddressNotValid = true;
-	}elseif($emailAddress != ''){
+	} elseif($emailAddress != ''){
 		$user = LibUser::fetchByEmailAddress($emailAddress);
 
 		if(is_array($user) && isset($user['id']) && is_numeric($user['id']) && $user['id'] != $sessionUser->id){
@@ -131,8 +128,8 @@ if(isset($_POST['action']) && $_POST['action'] == 'userDetailsChange'){
 
 	//-------------------------------
 
-	if(!$emailAddressMissing && !$emailAddressAlreadyUsed && !$emailAddressNotValid && 
-			!$firstnameMissing && !$lastnameMissing){	
+	if(!$emailAddressMissing && !$emailAddressAlreadyUsed && !$emailAddressNotValid &&
+			!$firstnameMissing && !$lastnameMissing){
 
 		$user = LibUser::fetch($sessionUser->getId());
 
@@ -141,10 +138,9 @@ if(isset($_POST['action']) && $_POST['action'] == 'userDetailsChange'){
 		$user['emailaddress'] = $emailAddress;
 
 		LibUser::save($user);
-		
+
 		LibGlobal::$notificationTexts[] = 'The user details have been changed.';
-	}
-	else{
+	} else {
 		if($emailAddressMissing){
 			LibGlobal::$errorTexts[] = 'The email address is missing.';
 		}
@@ -177,12 +173,10 @@ if(isset($_POST['action']) && $_POST['action'] == 'closeAccount' && isset($_POST
 			$sessionUser = null;
 			echo LibString::getNotificationBoxText();
 			exit();
-		}
-		else{
+		} else {
 			LibGlobal::$errorTexts[] = 'Your user account has not been deleted because the password is incorrect.';
 		}
-	}
-	else{
+	} else {
 		LibGlobal::$errorTexts[] = 'Your user account cannot be deleted because you are an admin.';
 	}
 }
@@ -194,7 +188,7 @@ if(isset($_POST['action']) && $_POST['action'] == 'closeAccount' && isset($_POST
 */
 echo LibString::getNotificationBoxText();
 echo LibString::getErrorBoxText();
-	
+
 if(isset($_GET['action']) && $_GET['action'] == 'closeAccount'){
 	echo '<h1>Delete user account</h1>';
 	echo '<p style="color:red">Do you really want do delete your user account? All of your documents will be deleted.</p>';
@@ -251,8 +245,10 @@ if(!LibGlobal::ldapIsEnabled()){
 echo '<p><a href="index.php?pid=literaturedb_settings&amp;action=closeAccount" onclick="return confirm(\'Are you sure you want to delete your user account?\')">Delete my user account</a></p>';
 
 function errorStyle($condition){
-	if($condition)
+	if($condition){
 		return ' class="problem" ';
+	}
+
 	return '';
 }
 ?>

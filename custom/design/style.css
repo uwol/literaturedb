@@ -6,7 +6,7 @@ body {
 	background-image:url(img/body-background.jpg);
 	background-position:top;
 	background-repeat:repeat-x;
-	color:#000000;  
+	color:#000000;
 	text-align:center;
 	font-family:Arial, Helvetica, sans-serif;
 	font-size:.9em;
@@ -26,8 +26,6 @@ img {
 	border:none;
 }
 
-
-
 img.left {
 	float:left;
 	margin:0 .5em 0 .2em;
@@ -42,12 +40,8 @@ img.right {
 	border:1px solid #eeeeee;
 }
 
-
-
 hr {
-	
 	border: 0px;
-	
 	border-top: solid 1px #eeeeee;
 }
 
@@ -78,7 +72,6 @@ hr {
 	letter-spacing:.1em;
 	color:#000000;
 }
-
 
 #navtabs {
 	margin:0 0 0 0;
@@ -154,17 +147,15 @@ hr {
 	border-top:1px solid #eeeeee;
 }
 
-
-
 /* Center Column */
 
 
-#centerColumn { 	
+#centerColumn {
 	margin:0 auto;
 	padding:1em;
 	width:38em;
 	text-align:justify;
-	vertical-align: middle;	
+	vertical-align: middle;
 	background-color:#ffffff;
 	border:1px solid #BBD1E2;
 }
@@ -177,8 +168,6 @@ h1 {
 	color:#DA8619;
 }
 
-
-
 h2 {
 	margin:0 0 0.5em 0;
 	padding:0.5em 0 0 0;
@@ -186,8 +175,6 @@ h2 {
 	letter-spacing:.1em;
 	color:#DA8619;
 }
-
-
 
 h3 {
 	margin:0 0 1em 0;
@@ -197,9 +184,7 @@ h3 {
 	color:#000000;
 }
 
-
-
-td { 	
+td {
 	vertical-align: top;
 }
 
@@ -208,128 +193,83 @@ th {
 	font-weight: normal;
 }
 
-
-
-
 .toplined {
 	margin-top:1em;
 	padding-top:.5em;
 	border-top:1px solid #eeeeee;
-
 }
-
-
-
-
 
 /* CenterColumn */
-
 #centerColumn .alien {
-	
 	margin-left: 1px;
 	margin-right: 1px;
-	
 	padding-left: 1px;
 	padding-right: 1px;
-	
 	border: red 1px dashed;
-
 }
-
-
 
 #centerColumn .tagcloud {
-
 	padding: 2px;
 	line-height: 1.4em;
-
 }
-
-
 
 #centerColumn fieldset {
-
 	padding: 3px;
-
 }
-
-
 
 #centerColumn .tagcloud .weight1 a{
 	color:#CCCCCC;
 }
 
-
 #centerColumn .tagcloud .weight2 a{
 	color:#BBBBBB;
 }
-
 
 #centerColumn .tagcloud .weight3 a{
 	color:#AAAAAA;
 }
 
-
 #centerColumn .tagcloud .weight4 a{
 	color:#888888;
 }
-
 
 #centerColumn .tagcloud .weight5 a{
 	color:#666666;
 }
 
-
 #centerColumn .tagcloud .weight6 a{
 	color:#444444;
 }
-
 
 #centerColumn .tagcloud .weight7 a{
 	color:#333333;
 }
 
-
 #centerColumn .tagcloud .weight8 a{
 	color:#222222;
 }
-
 
 #centerColumn .tagcloud .weight9 a{
 	color:#111111;
 }
 
-
 #centerColumn .tagcloud .weight10 a{
 	color:#000000;
 }
 
-
-
 #centerColumn .authors {
-
 	font-size: small;
 }
 
-
-
 #centerColumn .authors a {
-
 	color:#999999;
 }
 
-
-
 #centerColumn .tags {
-
 	font-size: x-small;
-
 }
 
-
-
 #centerColumn .tags a {
-
 	color:#999999;
 }
 
@@ -338,11 +278,8 @@ th {
 }
 
 /* tags suggest */
-
 #centerColumn SPAN.tagMatches {
-
     margin-left: 0px;
-
     margin-top: 10px;
 	margin-bottom: 10px;
 
@@ -350,44 +287,28 @@ th {
 
 }
 
-
-
 #centerColumn SPAN.tagMatches SPAN {
-
     padding: 2px;
-
     margin-right: 4px;
     background-color: #0000AB;
 
     color: #fff;
-
     cursor: pointer;
-
 }
-
 
 /* login */
-
 #centerColumn #login_container {
-
 	border: solid 1px #c6cfe1;
-
 	padding: 10px;
-
 	margin: 2em auto;
 	background-color: #FAFAFA;
-
 	text-align: left;
-
 	width: 250px;
 }
-
-
 
 #centerColumn #login_container input{
 	border:1px solid #222222;
 	color:#111111;
-
 	font-size: 10pt;
 }
 
@@ -403,7 +324,6 @@ th {
 	display:block;
 	margin-bottom:10px;
 	color:#222222;
-
 	width: 200px;
 }
 
@@ -413,17 +333,12 @@ th {
 	padding: 1px;
 }
 
-
-
 #centerColumn .notificationBox {
 	border: 1px solid #AAAAAA;
 	padding: 1px;
 }
 
-
-
 #centerColumn .exportBox {
 	float:right;
- 
 	text-align:right
 }

@@ -18,101 +18,113 @@ along with literaturedb. If not, see <http://www.gnu.org/licenses/>.
 
 class LibDocument{
 	private static $fields = array('id', 'hash', 'entrytype_id', 'title', 'date', 'abstract', 'address', 'booktitle', 'chapter', 'doi', 'ean', 'edition', 'institution', 'journal_id', 'number', 'organization', 'pages', 'publisher_id', 'school', 'series', 'url', 'volume', 'note', 'rating', 'filename', 'extension', 'filesize', 'datetime_created', 'user_id');
-	
+
 	static function fetchAll($userId){
 		$stmt = LibDb::prepare('SELECT id FROM literaturedb_document WHERE user_id = :user_id ORDER BY id');
 		$stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
 		$stmt->execute();
 		$stmt->bindColumn('id', $rowId);
-		
+
 		$documents = array();
+
 		while($stmt->fetch()){
 			$documents[] = self::fetch($rowId);
-		}		
+		}
+
 		return $documents;
 	}
-	
+
 	static function fetchLast($userId, $offset = 0, $limit = 3){
 		$internalLimit = 3;
-		if(is_numeric($limit) && $limit > 0)
+
+		if(is_numeric($limit) && $limit > 0){
 			$internalLimit = (int) $limit;
+		}
 
 		$internalOffset = 0;
-		if(is_numeric($offset) && $offset >= 0)
+
+		if(is_numeric($offset) && $offset >= 0){
 			$internalOffset = (int) $offset;
-		
+		}
+
 		$stmt = LibDb::prepare('SELECT id FROM literaturedb_document WHERE user_id = :user_id ORDER BY datetime_created DESC LIMIT :offset,:limit');
 		$stmt->bindValue(':user_id', $userId);
 		$stmt->bindValue(':offset', $internalOffset, PDO::PARAM_INT);
-		$stmt->bindValue(':limit', $internalLimit, PDO::PARAM_INT);		
+		$stmt->bindValue(':limit', $internalLimit, PDO::PARAM_INT);
 		$stmt->execute();
 		$stmt->bindColumn('id', $rowId);
-		
+
 		$documents = array();
+
 		while($stmt->fetch()){
 			$documents[] = self::fetch($rowId);
-		}		
+		}
+
 		return $documents;
 	}
-	
+
 	static function fetchWithoutTag($userId){
 		$stmt = LibDb::prepare('SELECT id FROM literaturedb_document WHERE user_id = :user_id AND literaturedb_document.id NOT IN (SELECT literaturedb_asso_document_tag.document_id FROM literaturedb_asso_document_tag)');
 		$stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
 		$stmt->execute();
 		$stmt->bindColumn('id', $rowId);
-		
+
 		$documents = array();
+
 		while($stmt->fetch()){
 			$documents[] = self::fetch($rowId);
 		}
+
 		return $documents;
 	}
-	
+
 	static function fetchWithTag($tag, $userId){
 		$stmt = LibDb::prepare('SELECT literaturedb_document.id FROM literaturedb_document, literaturedb_tag, literaturedb_asso_document_tag WHERE literaturedb_document.user_id = :user_id AND literaturedb_asso_document_tag.document_id = literaturedb_document.id AND literaturedb_asso_document_tag.tag_id = literaturedb_tag.id AND literaturedb_tag.name = :tag ORDER BY literaturedb_document.date DESC');
 		$stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
 		$stmt->bindValue(':tag', $tag);
 		$stmt->execute();
 		$stmt->bindColumn('id', $rowId);
-		
+
 		$documents = array();
+
 		while($stmt->fetch()){
 			$documents[] = self::fetch($rowId);
 		}
+
 		return $documents;
 	}
-	
+
 	static function fetchWithSearch($searchString, $userId){
 		$likeSearchString = '%'.$searchString.'%';
-	
-		$stmt = LibDb::prepare('SELECT literaturedb_document.id FROM literaturedb_document 
-			WHERE literaturedb_document.user_id = :user_id AND 
-			(literaturedb_document.id = :id 
-			OR literaturedb_document.title LIKE :title OR literaturedb_document.date LIKE :date 
-			OR literaturedb_document.abstract LIKE :abstract OR literaturedb_document.address LIKE :address 
-			OR literaturedb_document.booktitle LIKE :booktitle OR literaturedb_document.chapter LIKE :chapter 
-			OR literaturedb_document.doi LIKE :doi OR literaturedb_document.ean LIKE :ean 
-			OR literaturedb_document.edition LIKE :edition OR literaturedb_document.institution LIKE :institution 
-			OR literaturedb_document.number LIKE :number OR literaturedb_document.organization LIKE :organization 
-			OR literaturedb_document.pages LIKE :pages OR literaturedb_document.school LIKE :school 
-			OR literaturedb_document.series LIKE :series OR literaturedb_document.url LIKE :url 
-			OR literaturedb_document.volume LIKE :volume OR literaturedb_document.note LIKE :note 
-			OR literaturedb_document.filename LIKE :filename OR literaturedb_document.extension LIKE :extension 
-			OR literaturedb_document.datetime_created LIKE :datetime_created 
+
+		$stmt = LibDb::prepare('SELECT literaturedb_document.id FROM literaturedb_document
+			WHERE literaturedb_document.user_id = :user_id AND
+			(literaturedb_document.id = :id
+			OR literaturedb_document.title LIKE :title OR literaturedb_document.date LIKE :date
+			OR literaturedb_document.abstract LIKE :abstract OR literaturedb_document.address LIKE :address
+			OR literaturedb_document.booktitle LIKE :booktitle OR literaturedb_document.chapter LIKE :chapter
+			OR literaturedb_document.doi LIKE :doi OR literaturedb_document.ean LIKE :ean
+			OR literaturedb_document.edition LIKE :edition OR literaturedb_document.institution LIKE :institution
+			OR literaturedb_document.number LIKE :number OR literaturedb_document.organization LIKE :organization
+			OR literaturedb_document.pages LIKE :pages OR literaturedb_document.school LIKE :school
+			OR literaturedb_document.series LIKE :series OR literaturedb_document.url LIKE :url
+			OR literaturedb_document.volume LIKE :volume OR literaturedb_document.note LIKE :note
+			OR literaturedb_document.filename LIKE :filename OR literaturedb_document.extension LIKE :extension
+			OR literaturedb_document.datetime_created LIKE :datetime_created
 			OR literaturedb_document.id IN (
-				SELECT literaturedb_asso_document_author.document_id FROM literaturedb_asso_document_author, literaturedb_person 
-				WHERE literaturedb_asso_document_author.person_id = literaturedb_person.id 
-				AND (literaturedb_person.firstname LIKE :author_firstname OR literaturedb_person.lastname LIKE :author_lastname)) 
+				SELECT literaturedb_asso_document_author.document_id FROM literaturedb_asso_document_author, literaturedb_person
+				WHERE literaturedb_asso_document_author.person_id = literaturedb_person.id
+				AND (literaturedb_person.firstname LIKE :author_firstname OR literaturedb_person.lastname LIKE :author_lastname))
 			OR literaturedb_document.id IN (
-				SELECT literaturedb_asso_document_editor.document_id FROM literaturedb_asso_document_editor, literaturedb_person 
-				WHERE literaturedb_asso_document_editor.person_id = literaturedb_person.id 
-				AND (literaturedb_person.firstname LIKE :editor_firstname OR literaturedb_person.lastname LIKE :editor_lastname)) 
-			OR literaturedb_document.id IN (SELECT literaturedb_asso_document_tag.document_id FROM literaturedb_asso_document_tag, literaturedb_tag 
-				WHERE literaturedb_asso_document_tag.tag_id = literaturedb_tag.id AND literaturedb_tag.name LIKE :tag) 
+				SELECT literaturedb_asso_document_editor.document_id FROM literaturedb_asso_document_editor, literaturedb_person
+				WHERE literaturedb_asso_document_editor.person_id = literaturedb_person.id
+				AND (literaturedb_person.firstname LIKE :editor_firstname OR literaturedb_person.lastname LIKE :editor_lastname))
+			OR literaturedb_document.id IN (SELECT literaturedb_asso_document_tag.document_id FROM literaturedb_asso_document_tag, literaturedb_tag
+				WHERE literaturedb_asso_document_tag.tag_id = literaturedb_tag.id AND literaturedb_tag.name LIKE :tag)
 			OR literaturedb_document.journal_id IN (
-				SELECT literaturedb_journal.id FROM literaturedb_journal WHERE literaturedb_journal.name LIKE :journal_name) 
+				SELECT literaturedb_journal.id FROM literaturedb_journal WHERE literaturedb_journal.name LIKE :journal_name)
 			OR literaturedb_document.publisher_id IN (
-				SELECT literaturedb_publisher.id FROM literaturedb_publisher WHERE literaturedb_publisher.name LIKE :publisher_name)) 
+				SELECT literaturedb_publisher.id FROM literaturedb_publisher WHERE literaturedb_publisher.name LIKE :publisher_name))
 			ORDER BY literaturedb_document.date DESC');
 		$stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
 		$stmt->bindValue(':id', $searchString, PDO::PARAM_INT);
@@ -146,61 +158,65 @@ class LibDocument{
 		$stmt->bindValue(':publisher_name', $likeSearchString);
 		$stmt->execute();
 		$stmt->bindColumn('id', $rowId);
-		
+
 		$documents = array();
+
 		while($stmt->fetch()){
 			$documents[] = self::fetch($rowId);
 		}
+
 		return $documents;
 	}
-	
+
 	static function fetchWithAuthor($authorId){
 		$stmt = LibDb::prepare('SELECT literaturedb_document.id FROM literaturedb_document, literaturedb_asso_document_author WHERE literaturedb_document.id = literaturedb_asso_document_author.document_id AND literaturedb_asso_document_author.person_id = :id ORDER BY date DESC');
 		$stmt->bindValue(':id', $authorId, PDO::PARAM_INT);
 		$stmt->execute();
 		$stmt->bindColumn('id', $rowId);
-		
+
 		$documents = array();
+
 		while($stmt->fetch()){
 			$documents[] = self::fetch($rowId);
 		}
+
 		return $documents;
 	}
-	
+
 	static function fetch($id){
 		$stmt = LibDb::prepare('SELECT literaturedb_document.id, literaturedb_document.hash, literaturedb_document.entrytype_id, literaturedb_document.title, literaturedb_document.date, literaturedb_document.abstract, literaturedb_document.address, literaturedb_document.booktitle, literaturedb_document.chapter, literaturedb_document.doi, literaturedb_document.ean, literaturedb_document.edition, literaturedb_document.institution, literaturedb_document.journal_id, literaturedb_document.number, literaturedb_document.organization, literaturedb_document.pages, literaturedb_document.publisher_id, literaturedb_document.school, literaturedb_document.series, literaturedb_document.url, literaturedb_document.volume, literaturedb_document.note, literaturedb_document.rating, literaturedb_document.filename, literaturedb_document.extension, literaturedb_document.filesize, literaturedb_document.datetime_created, literaturedb_document.user_id, literaturedb_publisher.name AS publisher_name, literaturedb_journal.name AS journal_name FROM literaturedb_document LEFT JOIN literaturedb_publisher ON literaturedb_publisher.id = literaturedb_document.publisher_id LEFT JOIN literaturedb_journal ON literaturedb_journal.id = literaturedb_document.journal_id WHERE literaturedb_document.id = :id');
 		$stmt->bindValue(':id', $id, PDO::PARAM_INT);
 		$stmt->execute();
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
-		
+
 		return self::buildDocumentArray($row);
 	}
-	
+
 	static function fetchByHash($hash, $userId){
 		if($hash == '')
 			return;
-	
+
 		$stmt = LibDb::prepare('SELECT literaturedb_document.id, literaturedb_document.hash, literaturedb_document.entrytype_id, literaturedb_document.title, literaturedb_document.date, literaturedb_document.abstract, literaturedb_document.address, literaturedb_document.booktitle, literaturedb_document.chapter, literaturedb_document.doi, literaturedb_document.ean, literaturedb_document.edition, literaturedb_document.institution, literaturedb_document.journal_id, literaturedb_document.number, literaturedb_document.organization, literaturedb_document.pages, literaturedb_document.publisher_id, literaturedb_document.school, literaturedb_document.series, literaturedb_document.url, literaturedb_document.volume, literaturedb_document.note, literaturedb_document.rating, literaturedb_document.filename, literaturedb_document.extension, literaturedb_document.filesize, literaturedb_document.datetime_created, literaturedb_document.user_id, literaturedb_publisher.name AS publisher_name, literaturedb_journal.name AS journal_name FROM literaturedb_document LEFT JOIN literaturedb_publisher ON literaturedb_publisher.id = literaturedb_document.publisher_id LEFT JOIN literaturedb_journal ON literaturedb_journal.id = literaturedb_document.journal_id WHERE literaturedb_document.hash = :hash AND literaturedb_document.user_id = :user_id');
 		$stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
 		$stmt->bindValue(':hash', $hash);
 		$stmt->execute();
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
-		
+
 		return self::buildDocumentArray($row);
 	}
-	
+
 	static function buildDocumentArray($row){
 		$document = '';
-	
+
 		if(isset($row['id']) && $row['id'] != ''){
 			$document = array();
-		
+
 			// copy
 			$document['id'] = $row['id'];
 			$document['document_address'] = self::buildCanonicalDocumentAddress($row['id']);
 			$document['hash'] = $row['hash'];
 			$document['entrytype_id'] = $row['entrytype_id'];
-			$document['title'] = $row['title'];		
+			$document['title'] = $row['title'];
 			$document['date'] = $row['date'];
 			$document['abstract'] = $row['abstract'];
 
@@ -209,11 +225,11 @@ class LibDocument{
 			$document['chapter'] = $row['chapter'];
 			$document['doi'] = $row['doi'];
 			$document['ean'] = $row['ean'];
-		
+
 			$document['edition'] = '';
 			if($row['edition'] > 0)
-				$document['edition'] = $row['edition'];	
-		
+				$document['edition'] = $row['edition'];
+
 			$document['institution'] = $row['institution'];
 			$document['journal_id'] = $row['journal_id'];
 			$document['number'] = $row['number'];
@@ -230,14 +246,14 @@ class LibDocument{
 			$document['extension'] = $row['extension'];
 			$document['filesize'] = $row['filesize'];
 			$document['datetime_created'] = $row['datetime_created'];
-		
+
 			$entryTypes = self::fetchAllEntryTypes();
 			$document['entrytype_name'] = '';
 			if(isset($row['entrytype_id']) && isset($entryTypes[$row['entrytype_id']]))
 				$document['entrytype_name'] = $entryTypes[$row['entrytype_id']];
 			$document['publisher_name'] = $row['publisher_name'];
 			$document['journal_name'] = $row['journal_name'];
-		
+
 			$document['user_id'] = $row['user_id'];
 
 			/*
@@ -247,17 +263,19 @@ class LibDocument{
 			$document['editors'] = LibPerson::fetchAllEditorsForDocument($row['id']);
 			$document['tags'] = LibTag::fetchAllForDocument($row['id']);
 		}
-		
+
 		return $document;
 	}
-	
+
 	static function save($document){
-		foreach(self::$fields as $field)
-			if(!isset($document[$field]))
+		foreach(self::$fields as $field){
+			if(!isset($document[$field])){
 				$document[$field] = '';
+			}
+		}
 
 		$document['rating'] = min(5, $document['rating']);
-		
+
 		/*
 		* Journal
 		*/
@@ -271,14 +289,14 @@ class LibDocument{
 			$stmt->bindValue(':name', $journalName);
 			$stmt->bindValue(':user_id', $document['user_id'], PDO::PARAM_INT);
 			$stmt->execute();
-			
+
 			$stmt = LibDb::prepare('SELECT id FROM literaturedb_journal WHERE name = :name AND user_id = :user_id');
 			$stmt->bindValue(':name', $journalName);
 			$stmt->bindValue(':user_id', $document['user_id'], PDO::PARAM_INT);
 			$stmt->execute();
 			$stmt->bindColumn('id', $journalId);
 			$stmt->fetch();
-			
+
 			$document['journal_id'] = $journalId;
 		}
 
@@ -295,7 +313,7 @@ class LibDocument{
 			$stmt->bindValue(':name', $publisherName);
 			$stmt->bindValue(':user_id', $document['user_id'], PDO::PARAM_INT);
 			$stmt->execute();
-	
+
 			$stmt = LibDb::prepare('SELECT id FROM literaturedb_publisher WHERE name = :name AND user_id = :user_id');
 			$stmt->bindValue(':name', $publisherName);
 			$stmt->bindValue(':user_id', $document['user_id'], PDO::PARAM_INT);
@@ -340,12 +358,12 @@ class LibDocument{
 
 		if($count > 0){
 			// filesize, filename, extension, datetime_created, user_id may not be updated here!
-			$stmt = LibDb::prepare('UPDATE literaturedb_document SET entrytype_id = :entrytype_id, 
-				title = :title, date = :date, abstract = :abstract, address = :address, 
-				booktitle = :booktitle, chapter = :chapter, doi = :doi, 
-				ean = :ean, edition = :edition, institution = :institution, journal_id = :journal_id, 
-				number = :number, organization = :organization, 
-				pages = :pages, publisher_id = :publisher_id, school = :school, series = :series, url = :url, 
+			$stmt = LibDb::prepare('UPDATE literaturedb_document SET entrytype_id = :entrytype_id,
+				title = :title, date = :date, abstract = :abstract, address = :address,
+				booktitle = :booktitle, chapter = :chapter, doi = :doi,
+				ean = :ean, edition = :edition, institution = :institution, journal_id = :journal_id,
+				number = :number, organization = :organization,
+				pages = :pages, publisher_id = :publisher_id, school = :school, series = :series, url = :url,
 				volume = :volume, note = :note, rating = :rating WHERE id = :id');
 			$stmt->bindValue(':entrytype_id', $cleanEntryTypeId, PDO::PARAM_INT);
 			$stmt->bindValue(':title', $cleanTitle);
@@ -364,7 +382,7 @@ class LibDocument{
 			$stmt->bindValue(':pages', $cleanPages);
 			$stmt->bindValue(':publisher_id', $cleanPublisherId);
 			$stmt->bindValue(':school', $cleanSchool);
-			$stmt->bindValue(':series', $cleanSeries);	
+			$stmt->bindValue(':series', $cleanSeries);
 			$stmt->bindValue(':url', $cleanUrl);
 			$stmt->bindValue(':volume', $cleanVolume);
 			$stmt->bindValue(':note', $cleanNote);
@@ -375,12 +393,12 @@ class LibDocument{
 			$id = $document['id'];
 		}
 		else{
-			$stmt = LibDb::prepare('INSERT IGNORE INTO literaturedb_document 
-				(entrytype_id, title, date, abstract, address, booktitle, chapter, doi, ean, edition, 
-				institution, journal_id, number, organization, pages, publisher_id, school, series, 
-				url, volume, note, rating, datetime_created, user_id) 
-				VALUES (:entrytype_id, :title, :date, :abstract, :address, :booktitle, :chapter, :doi, :ean, :edition, 
-				:institution, :journal_id, :number, :organization, :pages, :publisher_id, :school, :series, 
+			$stmt = LibDb::prepare('INSERT IGNORE INTO literaturedb_document
+				(entrytype_id, title, date, abstract, address, booktitle, chapter, doi, ean, edition,
+				institution, journal_id, number, organization, pages, publisher_id, school, series,
+				url, volume, note, rating, datetime_created, user_id)
+				VALUES (:entrytype_id, :title, :date, :abstract, :address, :booktitle, :chapter, :doi, :ean, :edition,
+				:institution, :journal_id, :number, :organization, :pages, :publisher_id, :school, :series,
 				:url, :volume, :note, :rating, NOW(), :user_id)');
 			$stmt->bindValue(':entrytype_id', $cleanEntryTypeId, PDO::PARAM_INT);
 			$stmt->bindValue(':title', $cleanTitle);
@@ -399,7 +417,7 @@ class LibDocument{
 			$stmt->bindValue(':pages', $cleanPages);
 			$stmt->bindValue(':publisher_id', $cleanPublisherId);
 			$stmt->bindValue(':school', $cleanSchool);
-			$stmt->bindValue(':series', $cleanSeries);	
+			$stmt->bindValue(':series', $cleanSeries);
 			$stmt->bindValue(':url', $cleanUrl);
 			$stmt->bindValue(':volume', $cleanVolume);
 			$stmt->bindValue(':note', $cleanNote);
@@ -409,14 +427,14 @@ class LibDocument{
 
 			$id = LibDb::insertId();
 		}
-				
+
 		/*
 		* Tags
 		*/
 		$stmt = LibDb::prepare('DELETE FROM literaturedb_asso_document_tag WHERE document_id = :document_id');
 		$stmt->bindValue(':document_id', $id, PDO::PARAM_INT);
 		$stmt->execute();
-		
+
 		if(isset($document['tags']) && is_array($document['tags'])){
 			foreach($document['tags'] as $tag){
 				if($document['user_id'] == $tag['user_id']){
@@ -426,7 +444,7 @@ class LibDocument{
 					$stmt->execute();
 				}
 			}
-	
+
 			foreach($document['tags'] as $tag){
 				if($document['user_id'] == $tag['user_id']){
 					$stmt = LibDb::prepare('SELECT id FROM literaturedb_tag WHERE name = :name AND user_id = :user_id');
@@ -435,7 +453,7 @@ class LibDocument{
 					$stmt->execute();
 					$stmt->bindColumn('id', $tagId);
 					$stmt->fetch();
-					
+
 					$stmt = LibDb::prepare('INSERT IGNORE INTO literaturedb_asso_document_tag (document_id, tag_id) VALUES (:document_id, :tag_id)');
 					$stmt->bindValue(':document_id', $id, PDO::PARAM_INT);
 					$stmt->bindValue(':tag_id', $tagId, PDO::PARAM_INT);
@@ -480,7 +498,7 @@ class LibDocument{
 					$stmt->bindValue(':person_id', $authorId, PDO::PARAM_INT);
 					$stmt->bindValue(':position', $i, PDO::PARAM_INT);
 					$stmt->execute();
-		
+
 					$i++;
 				}
 			}
@@ -527,12 +545,12 @@ class LibDocument{
 				}
 			}
 		}
-		
+
 		LibDocument::deleteOrphans();
-		
+
 		return $id;
 	}
-	
+
 	static function saveFileInfo($documentId, $hash, $filename, $extension){
 		$documentId = trim($documentId);
 		$hash = trim($hash);
@@ -541,9 +559,9 @@ class LibDocument{
 
 		if($documentId == ''){
 			LibGlobal::$errorTexts[] = 'Could not save file info due to an undefined document id.';
-		}elseif($hash != '' && $filename != ''){
+		} elseif($hash != '' && $filename != ''){
 			$filesize = filesize(LibDocument::getFilePath($hash));
-			
+
 			$stmt = LibDb::prepare('UPDATE literaturedb_document SET hash = :hash, filename = :filename, extension = :extension, filesize = :filesize WHERE id = :id AND (hash = "" OR hash IS NULL)');
 			$stmt->bindValue(':hash', $hash);
 			$stmt->bindValue(':filename', $filename);
@@ -553,39 +571,41 @@ class LibDocument{
 			$stmt->execute();
 		}
 	}
-	
+
 	static function delete($documentId){
 		$deleted = false;
-		
+
 		$stmt = LibDb::prepare('SELECT hash FROM literaturedb_document WHERE id = :id');
 		$stmt->bindValue(':id', $documentId, PDO::PARAM_INT);
 		$stmt->execute();
 		$stmt->bindColumn('hash', $hash);
 		$stmt->fetch();
-		
+
 		$stmt = LibDb::prepare('SELECT COUNT(hash) AS number FROM literaturedb_document WHERE hash = :hash');
 		$stmt->bindValue(':hash', $hash);
 		$stmt->execute();
 		$stmt->bindColumn('number', $count);
 		$stmt->fetch();
-		
+
 		$stmt = LibDb::prepare('DELETE FROM literaturedb_document WHERE id = :id');
 		$stmt->bindValue(':id', $documentId, PDO::PARAM_INT);
 		$stmt->execute();
-		
+
 		LibDocument::deleteOrphans();
-		
+
 		$deleted = true;
 
 		if($count < 2){
 			$filePath = self::getFilePath($hash);
+
 			if(is_file($filePath)){
 				unlink($filePath);
 			}
 		}
+
 		return $deleted;
 	}
-	
+
 	static function deleteOrphans(){
 		/*
 		* Delete orphaned associations between documents and authors
@@ -595,100 +615,111 @@ class LibDocument{
 
 		/*
 		* Delete orphaned associations between documents and editors
-		*/		
+		*/
 		$cmd = 'DELETE FROM literaturedb_asso_document_editor WHERE document_id NOT IN (SELECT id FROM literaturedb_document) OR person_id NOT IN (SELECT id FROM literaturedb_person)';
 		LibDb::query($cmd);
 
 		/*
 		* Delete orphaned associations between documents and tags
-		*/	
+		*/
 		$cmd = 'DELETE FROM literaturedb_asso_document_tag WHERE document_id NOT IN (SELECT id FROM literaturedb_document) OR tag_id NOT IN (SELECT id FROM literaturedb_tag)';
 		LibDb::query($cmd);
-	
+
 		/*
 		* Delete orphaned journals
-		*/		
+		*/
 		$cmd = 'DELETE FROM literaturedb_journal WHERE id NOT IN (SELECT journal_id FROM literaturedb_document)';
 		LibDb::query($cmd);
-		
+
 		/*
 		* Delete orphaned publishers
-		*/		
+		*/
 		$cmd = 'DELETE FROM literaturedb_publisher WHERE id NOT IN (SELECT publisher_id FROM literaturedb_document)';
 		LibDb::query($cmd);
-		
+
 		/*
 		* Delete orphaned tags
 		*/
 		$cmd = 'DELETE FROM literaturedb_tag WHERE id NOT IN (SELECT tag_id FROM literaturedb_asso_document_tag)';
 		LibDb::query($cmd);
-		
+
 		/*
 		* Delete orphaned authors and editors
 		*/
 		$cmd = 'DELETE FROM literaturedb_person WHERE id NOT IN (SELECT person_id FROM literaturedb_asso_document_author) AND id NOT IN (SELECT person_id FROM literaturedb_asso_document_editor)';
-		LibDb::query($cmd);	
+		LibDb::query($cmd);
 	}
-	
+
 	/*
 	* Output
 	*/
-	static function buildTagsString($document){	
+	static function buildTagsString($document){
 		$tagLinks = array();
-		foreach($document['tags'] as $tag)
+
+		foreach($document['tags'] as $tag){
 			$tagLinks[] = '<a href="index.php?pid=literaturedb_documents&amp;tag=' .LibString::protectXSS($tag['name']). '">' . LibString::protectXSS($tag['name']) .'</a>';
+		}
+
 		return implode(' ', $tagLinks);
 	}
-	
+
 	static function buildAuthorsString($document){
 		$authorsStrings = array();
-		foreach($document['authors'] as $author)
+
+		foreach($document['authors'] as $author){
 			$authorsStrings[] = '<a href="index.php?pid=literaturedb_person&amp;personAddress=' .LibString::protectXSS(LibUser::buildMinimalUserAddress($author['person_address'])). '">' .LibString::protectXSS($author['lastname']). '</a>';
+		}
+
 		return implode(', ', $authorsStrings);
 	}
-	
+
 	static function buildEditorsString($document){
 		$editorsStrings = array();
-		foreach($document['editors'] as $editor)
+
+		foreach($document['editors'] as $editor){
 			$editorsStrings[] = '<a href="index.php?pid=literaturedb_person&amp;personAddress=' .LibString::protectXSS(LibUser::buildMinimalUserAddress($editor['person_address'])). '">' .LibString::protectXSS($editor['lastname']). '</a>';
-		return implode(', ', $editorsStrings);	
+		}
+
+		return implode(', ', $editorsStrings);
 	}
-	
-	
-	
+
+
+
 	/*
 	* Addressing
 	*/
 	static function buildCanonicalDocumentAddress($documentAddress){
 		$documentAddress = trim($documentAddress);
 		$numberOfParts = substr_count($documentAddress, '@');
-	
-		if($numberOfParts == 0)
+
+		if($numberOfParts == 0){
 			return $documentAddress . '@' . LibConfig::$sitePath;
-		elseif($numberOfParts == 1)
+		} elseif($numberOfParts == 1){
 			return $documentAddress;
-		else
+		} else {
 			return '';
+		}
 	}
-	
+
 	static function buildMinimalDocumentAddress($documentAddress){
 		$documentAddress = trim($documentAddress);
 		$numberOfParts = substr_count($documentAddress, '@');
 
-		if($numberOfParts == 0)
+		if($numberOfParts == 0){
 			return $documentAddress;
-		elseif($numberOfParts == 1){
-			if(self::getDomainPart($documentAddress) == LibConfig::$sitePath)
+		} elseif($numberOfParts == 1){
+			if(self::getDomainPart($documentAddress) == LibConfig::$sitePath){
 				return self::getLocalPart($documentAddress);
-			else
+			} else {
 				return self::buildCanonicalDocumentAddress($documentAddress);
-		}
-		else
+			}
+		} else {
 			return '';
+		}
 	}
 
 	static function isLocalDocumentAddress($documentAddress){
-		return self::getDomainPart(self::buildCanonicalDocumentAddress($documentAddress)) == LibConfig::$sitePath;		
+		return self::getDomainPart(self::buildCanonicalDocumentAddress($documentAddress)) == LibConfig::$sitePath;
 	}
 
 	static function getDocumentAddressParts($documentAddress){
@@ -707,70 +738,80 @@ class LibDocument{
 	}
 
 	static function isValidDocumentAddress($documentAddress){
-		if($documentAddress != "")
-	    	if(preg_match("/^([0-9]+)@([a-zA-Z0-9\.\-]+)$/", $documentAddress))
+		if($documentAddress != ""){
+	    	if(preg_match("/^([0-9]+)@([a-zA-Z0-9\.\-]+)$/", $documentAddress)){
 				return true;
+			}
+		}
+
 		return false;
 	}
-	
+
 	static function fetchAllEntryTypes(){
 		return array(0 => '', 1=>'article', 2=>'book', 3=>'booklet', 4=>'conference', 5=>'inbook', 6=>'incollection', 7=>'inproceedings', 8=>'manual', 9=>'mastersthesis', 10=>'misc', 11=>'phdthesis', 12=>'proceedings', 13=>'techreport', 14=>'unpublished');
 	}
-	
+
 	static function getFilePath($hash){
 		self::createFileDirectories($hash);
 		return LibConfig::$documentDir.'/'.substr($hash, 0, 1).'/'.substr($hash, 1, 1).'/'.$hash;
 	}
-	
+
 	static function createFileDirectories($hash){
-		if(!is_dir(LibConfig::$documentDir . '/'. substr($hash, 0, 1)))
+		if(!is_dir(LibConfig::$documentDir . '/'. substr($hash, 0, 1))){
 			mkdir(LibConfig::$documentDir . '/'. substr($hash, 0, 1));
-		if(!is_dir(LibConfig::$documentDir . '/'. substr($hash, 0, 1). '/'.substr($hash, 1, 1)))
+		}
+
+		if(!is_dir(LibConfig::$documentDir . '/'. substr($hash, 0, 1). '/'.substr($hash, 1, 1))){
 			mkdir(LibConfig::$documentDir . '/'. substr($hash, 0, 1). '/'. substr($hash, 1, 1));
+		}
 	}
-	
+
 	/*
 	* Export
 	*/
 	static function getId_Word2007($id){
 		return $id . '.' . LibConfig::$siteUri;
 	}
-	
+
 	static function getId_Bibtex($document){
 		$authors = $document['authors'];
 		$authorsString = '';
 		$dateString = '';
-		
+
 		if(is_array($authors)){
 			$numberOfAuthors = count($authors);
-		
+
 			if($numberOfAuthors == 1){
 				$author = $authors[0];
 				$authorsString = substr(LibDocument::replaceSpecialChars(trim($author['lastname'])), 0, 3);
-			}
-			elseif($numberOfAuthors > 1){
+			} elseif($numberOfAuthors > 1){
 				$i = 0;
 
 				foreach($authors as $author){
-					if($i < 4)
+					if($i < 4){
 						$authorsString .= substr(LibDocument::replaceSpecialChars(trim($author['lastname'])), 0, 1);
-					if($i == 4)
+					}
+
+					if($i == 4){
 						$authorsString .= '+';
+					}
+
 					$i++;
 				}
 			}
 		}
-				
-		if($document['date'] > 0)
+
+		if($document['date'] > 0){
 			$dateString = substr($document['date'], 2, 2);
-		
+		}
+
 		return $authorsString . $dateString . '.' . $document['id'] . '.' . LibConfig::$siteUri;
 	}
-	
+
 	static function getId_ModsXml($id){
 		return $id . '.' . LibConfig::$siteUri;
 	}
-		
+
 	/*
 	* Helper
 	*/
@@ -781,11 +822,14 @@ class LibDocument{
 		$string = str_ireplace($needle, $replacement, $string);
 		return preg_replace('/[^a-zA-Z0-9\-]/', '', $string);
 	}
-	
+
 	static function isOwnDocument($document){
 		global $sessionUser;
-		if(self::isLocalDocumentAddress($document['document_address']) && $document['user_id'] == $sessionUser->id)
+
+		if(self::isLocalDocumentAddress($document['document_address']) && $document['user_id'] == $sessionUser->id){
 			return true;
+		}
+
 		return false;
 	}
 }

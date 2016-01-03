@@ -22,38 +22,37 @@ class LibCronjobs{
 			self::generateHtaccessDenyFile(LibConfig::$documentDir.'/');
 		}
 	}
-	
+
 	static function generateHtaccessDenyFile($directory){
 		$content = "deny from all";
 		self::generateHtaccessFile($directory, $content);
     }
-    
+
     static function generateHtaccessFile($directory, $content){
     	$filename = $directory.".htaccess";
 	    $handle = @fopen($filename, "w");
     	@fwrite($handle, $content);
     	@fclose($handle);
     }
-    
+
     static function hasHtaccessDenyFile($directory){
     	$filename = $directory.".htaccess";
-    	
+
     	if(!is_file($filename)){
     		return false;
     	}
-    	
+
     	$handle = @fopen($filename, "r");
     	$content = @fread($handle, @filesize($filename));
     	@fclose($handle);
-    	
+
     	if($content == "deny from all"){
     		return true;
-    	}
-    	else{
+    	} else {
     		return false;
     	}
     }
-    
+
     static function cleanDb(){
 		LibDb::query('DELETE FROM literaturedb_sys_share WHERE local_user_id NOT IN (SELECT id FROM literaturedb_sys_user)');
 		LibDb::query('DELETE FROM literaturedb_sys_event WHERE user_id NOT IN (SELECT id FROM literaturedb_sys_user)');

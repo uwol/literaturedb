@@ -29,7 +29,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'activate' && isset($_GET['userI
 		$user['activated'] = 1;
 		LibUser::save($user);
 
-		if($user['emailaddress'] != ''){		
+		if($user['emailaddress'] != ''){
 			$text = "The user account " . $user['username'] . " has been activated.";
 
 			require_once("lib/thirdparty/phpmailer/class.phpmailer.php");
@@ -58,12 +58,13 @@ if(isset($_GET['action']) && $_GET['action'] == 'activate' && isset($_GET['userI
 }
 elseif(isset($_GET['action']) && $_GET['action'] == 'deactivate' && isset($_GET['userId']) && is_numeric($_GET['userId'])){
 	$user = LibUser::fetch($_GET['userId']);
+
 	if($user['id'] != ''){
 		$user['activated'] = 0;
 		LibUser::save($user);
 	}
 }
-elseif(isset($_POST['action']) && $_POST['action'] == 'delete' && 
+elseif(isset($_POST['action']) && $_POST['action'] == 'delete' &&
 		isset($_POST['userId']) && is_numeric($_POST['userId']) &&
 		isset($_POST['password'])){
 	$user = LibUser::fetch($_POST['userId']);
@@ -73,12 +74,12 @@ elseif(isset($_POST['action']) && $_POST['action'] == 'delete' &&
 		if(LibUser::checkPassword($_POST['password'], $adminUser['password_hash'])){
 			LibUser::delete($user['id']);
 			LibGlobal::$notificationTexts[] = 'The user account has been deleted.';
-		}
-		else
+		} else {
 			LibGlobal::$errorTexts[] = 'The user account has not been deleted because you typed in an incorrect password.';
-	}
-	else
+		}
+	} else {
 		LibGlobal::$errorTexts[] = 'The user account cannot be deleted because the user is an admin.';
+	}
 }
 
 
@@ -90,10 +91,10 @@ echo LibString::getNotificationBoxText();
 echo LibString::getErrorBoxText();
 
 
-if(isset($_GET['action']) && $_GET['action'] == 'delete' && 
+if(isset($_GET['action']) && $_GET['action'] == 'delete' &&
 		isset($_GET['userId']) && is_numeric($_GET['userId'])){
 	$user = LibUser::fetch($_GET['userId']);
-	
+
 	echo '<h1>Delete user account</h1>';
 	echo '<p style="color:red">Do you really want do delete the user "' .LibString::protectXSS($user['username']). '"? All documents of this user will be deleted.</p>';
 
@@ -117,11 +118,17 @@ echo '<p>This page is accessible to you because your username "'.LibString::prot
 echo '<h2>User management</h2>';
 echo '<table>';
 echo '<tr><th>username</th>';
-if(!LibGlobal::ldapIsEnabled())
+
+if(!LibGlobal::ldapIsEnabled()){
 	echo '<th>activated</th>';
+}
+
 echo '<th>user information</th>';
-if(!LibGlobal::ldapIsEnabled())
+
+if(!LibGlobal::ldapIsEnabled()){
 	echo '<th>(de/)activate</th>';
+}
+
 echo '<th>delete</th></tr>';
 
 
@@ -129,41 +136,49 @@ foreach(LibUser::fetchAllOrderByActivated($sessionUser->getUserAddress()) as $us
 	echo '<tr>';
 
 	echo '<td>'. LibString::protectXSS($user['username']) .'</td>';
-	
+
 	if(!LibGlobal::ldapIsEnabled()){
 		echo '<td style="text-align:center">';
-		if($user['activated'])
+
+		if($user['activated']){
 			echo '<img src="img/icons/bullet_green.png" alt="activate"/>';
-		else
+		} else {
 			echo '<img src="img/icons/bullet_red.png" alt="deactivated"/>';
+		}
+
 		echo '</td>';
 	}
-	
+
 	echo '<td>'. LibString::protectXSS($user['firstname']) .' '.LibString::protectXSS($user['lastname']).'<br />' .LibString::protectXSS($user['emailaddress']). '</td>';
 
 	if(!LibGlobal::ldapIsEnabled()){
 		echo '<td style="text-align:center">';
+
 		if(!$user['is_admin']){
-			if(!$user['activated'])
+			if(!$user['activated']){
 				echo '<a href="index.php?pid=literaturedb_admin&amp;action=activate&amp;userId=' .LibString::protectXSS($user['id']). '" onclick="return confirm(\'Are you sure you want to activate this user account?\')"><img src="img/icons/tick.png" alt="activate"/></a>';
-			else
+			} else {
 				echo '<a href="index.php?pid=literaturedb_admin&amp;action=deactivate&amp;userId=' .LibString::protectXSS($user['id']). '" onclick="return confirm(\'Are you sure you want to deactivate this user account?\')"><img src="img/icons/delete.png" alt="deactivate"/></a>';
-		}
-		else
+			}
+		} else {
 			echo 'admin';
+		}
+
 		echo '</td>';
 	}
 
 	echo '<td style="text-align:center">';
+
 	if(!$user['is_admin']){
 		echo '<a href="index.php?pid=literaturedb_admin&amp;action=delete&amp;userId=' .LibString::protectXSS($user['id']). '" onclick="return confirm(\'Are you sure you want to DELETE this user account?\')"><img src="img/icons/cross.png" alt="delete"/></a>';
-	}
-	else{
+	} else {
 		echo 'admin';
 	}
+
 	echo '</td>';
-	
+
 	echo '</tr>';
 }
+
 echo '</table>';
 ?>

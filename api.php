@@ -18,7 +18,7 @@ along with literaturedb. If not, see <http://www.gnu.org/licenses/>.
 
 include "lib/masterinclude.php";
 
-$request = LibRest::processRequest(); 
+$request = LibRest::processRequest();
 $requestVars = $request->getVars();
 $askingUserAddress = '';
 
@@ -30,14 +30,15 @@ if(isset($requestVars['auth']) && $requestVars['auth'] == 'session'){ //is this 
 	//should only be done for internal calls!
 	require 'lib/initialize.php';
 
-	if($sessionUser->isLoggedin())
+	if($sessionUser->isLoggedin()){
 		$askingUserAddress = $sessionUser->getUserAddress();
-	else{
+	} else {
 		LibRest::sendResponse(401);
 		exit;
 	}
 }
-else{ //this is an external API call
+//this is an external API call
+else {
 	LibDb::connect();
 
 	$authenticated = false;
@@ -71,17 +72,17 @@ else{ //this is an external API call
 		exit;
 	}
 
-	if(isset($requestVars['askedUserAddress']) && 
+	if(isset($requestVars['askedUserAddress']) &&
 			!LibUser::isLocalUserAddress($requestVars['askedUserAddress'])){ //don't forward requests for remote user addresses
 		LibRest::sendResponse(403, 'The askedUserAddress is not handled by this this server.');
 	}
 
-	if(isset($requestVars['askedDocumentAddress']) && 
+	if(isset($requestVars['askedDocumentAddress']) &&
 			!LibDocument::isLocalDocumentAddress($requestVars['askedDocumentAddress'])){ //don't forward requests for remote document addresses
 		LibRest::sendResponse(403, 'The askedDocumentAddress is not handled by this this server.');
 	}
-		
-	if(isset($requestVars['askedPersonAddress']) && 
+
+	if(isset($requestVars['askedPersonAddress']) &&
 			!LibPerson::isLocalPersonAddress($requestVars['askedPersonAddress'])){ //don't forward requests for remote person addresses
 		LibRest::sendResponse(403, 'The askedPersonAddress is not handled by this this server.');
 	}
@@ -90,88 +91,88 @@ else{ //this is an external API call
 $askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
 
 switch($requestVars['action']){
-	case 'document_fetchWithoutTag': 
-		LibRest::sendResponse(200, 
-			json_encode(LibRouter::document_fetchWithoutTag(array($requestVars['askedUserAddress']), $askingUserAddress)), 
+	case 'document_fetchWithoutTag':
+		LibRest::sendResponse(200,
+			json_encode(LibRouter::document_fetchWithoutTag(array($requestVars['askedUserAddress']), $askingUserAddress)),
 			'application/json');
 		break;
 
 	case 'document_fetchWithTag':
-		LibRest::sendResponse(200, 
+		LibRest::sendResponse(200,
 			json_encode(LibRouter::document_fetchWithTag($requestVars['tag'], array($requestVars['askedUserAddress']), $askingUserAddress)),
 			'application/json');
 		break;
 
 	case 'document_fetchWithSearch':
-		LibRest::sendResponse(200, 
+		LibRest::sendResponse(200,
 			json_encode(LibRouter::document_fetchWithSearch($requestVars['searchString'], array($requestVars['askedUserAddress']), $askingUserAddress)),
 			'application/json');
 		break;
 
 	case 'document_fetchWithAuthor':
-		LibRest::sendResponse(200, 
+		LibRest::sendResponse(200,
 			json_encode(LibRouter::document_fetchWithAuthor($requestVars['authorAddress'], $askingUserAddress)),
 			'application/json');
 		break;
-				
+
 	case 'document_fetchLast':
 		if(!isset($requestVars['dataType']) || $requestVars['dataType'] == 'json')
-			LibRest::sendResponse(200, 
-				json_encode(LibRouter::document_fetchLast(array($requestVars['askedUserAddress']), $askingUserAddress, $requestVars['offset'], $requestVars['limit'])), 
+			LibRest::sendResponse(200,
+				json_encode(LibRouter::document_fetchLast(array($requestVars['askedUserAddress']), $askingUserAddress, $requestVars['offset'], $requestVars['limit'])),
 				'application/json');
 		elseif($requestVars['dataType'] == 'html'){
 			$documents = LibRouter::document_fetchLast(array($requestVars['askedUserAddress']), $askingUserAddress, $requestVars['offset'], $requestVars['limit']);
-			LibRest::sendResponse(200, 
+			LibRest::sendResponse(200,
 				LibView::documents_lastDocumentRows($documents).' ', //the ' ' is there to avoid empty HTTP answers
 				'text/html');
 		}
 		break;
 
 	case 'document_fetch':
-		LibRest::sendResponse(200, 
+		LibRest::sendResponse(200,
 			json_encode(LibRouter::document_fetch($requestVars['askedDocumentAddress'], $askingUserAddress)),
 			'application/json');
 		break;
 
 	case 'document_fetchFileContents':
-		LibRest::sendResponse(200, 
-			LibRouter::document_fetchFileContents($requestVars['askedDocumentAddress'], $askingUserAddress), 
+		LibRest::sendResponse(200,
+			LibRouter::document_fetchFileContents($requestVars['askedDocumentAddress'], $askingUserAddress),
 			'application/octet-stream');
 		break;
 
 	case 'tag_fetchAll':
 		if(!isset($requestVars['dataType']) || $requestVars['dataType'] == 'json')
-			LibRest::sendResponse(200, 
+			LibRest::sendResponse(200,
 				json_encode(LibRouter::tag_fetchAll(array($requestVars['askedUserAddress']), $askingUserAddress, $requestVars['offset'], $requestVars['limit'])),
 				'application/json');
 		elseif($requestVars['dataType'] == 'html'){
 			$tags = LibRouter::tag_fetchAll(array($requestVars['askedUserAddress']), $askingUserAddress, $requestVars['offset'], $requestVars['limit']);
-			LibRest::sendResponse(200, 
+			LibRest::sendResponse(200,
 				LibView::documents_tagCloud($tags).' ', //the ' ' is there to avoid empty HTTP answers
 				'text/html');
 		}
 		break;
-				
-	case 'tag_fetchAllBeginningWith': 
+
+	case 'tag_fetchAllBeginningWith':
 		$res = array();
 		if(isset($requestVars['tag'])){
 			foreach(LibRouter::tag_fetchNameBeginningWith($requestVars['tag'], array($sessionUser->getUserAddress()), $sessionUser->getUserAddress()) as $tag){
 				$res[] = $tag['name'];
 			}
 		}
-		LibRest::sendResponse(200, 
+		LibRest::sendResponse(200,
 			json_encode($res),
 			'application/json');
 		break;
 
 	case 'person_fetchAllAuthors':
 		if(!isset($requestVars['dataType']) || $requestVars['dataType'] == 'json')
-			LibRest::sendResponse(200, 
+			LibRest::sendResponse(200,
 				json_encode(LibRouter::person_fetchAllAuthors(array($requestVars['askedUserAddress']), $askingUserAddress, $requestVars['offset'], $requestVars['limit'])),
 				'application/json');
 		elseif($requestVars['dataType'] == 'html'){
 			$authors = LibRouter::person_fetchAllAuthors(array($requestVars['askedUserAddress']), $askingUserAddress, $requestVars['offset'], $requestVars['limit']);
-			LibRest::sendResponse(200, 
+			LibRest::sendResponse(200,
 				LibView::documents_authorCloud($authors).' ', //the ' ' is there to avoid empty HTTP answers
 				'text/html');
 		}
@@ -180,46 +181,46 @@ switch($requestVars['action']){
 	case 'person_fetchAllBeginningWith':
 		$res = array();
 		if(isset($requestVars['tag'])){
-			$persons = LibRouter::person_fetchNameBeginningWith($requestVars['tag'], array($sessionUser->getUserAddress()), $sessionUser->getUserAddress());		
+			$persons = LibRouter::person_fetchNameBeginningWith($requestVars['tag'], array($sessionUser->getUserAddress()), $sessionUser->getUserAddress());
 			foreach($persons as $person){
 				$res[] = LibString::getPersonNameString($person);
 			}
 		}
-		LibRest::sendResponse(200, 
+		LibRest::sendResponse(200,
 			json_encode($res),
 			'application/json');
 		break;
 
 	case 'person_fetch':
-		LibRest::sendResponse(200, 
+		LibRest::sendResponse(200,
 			json_encode(LibRouter::person_fetch($requestVars['askedPersonAddress'], $askingUserAddress)),
 			'application/json');
 		break;
-				
-	case 'journal_fetchAllBeginningWith': 
+
+	case 'journal_fetchAllBeginningWith':
 		$res = array();
 		if(isset($requestVars['tag'])){
 			foreach(LibRouter::journal_fetchNameBeginningWith($requestVars['tag'], array($sessionUser->getUserAddress()), $sessionUser->getUserAddress()) as $tag){
 				$res[] = $tag['name'];
 			}
 		}
-		LibRest::sendResponse(200, 
-			json_encode($res),	
+		LibRest::sendResponse(200,
+			json_encode($res),
 			'application/json');
 		break;
-		
-	case 'publisher_fetchAllBeginningWith': 
+
+	case 'publisher_fetchAllBeginningWith':
 		$res = array();
 		if(isset($requestVars['tag'])){
 			foreach(LibRouter::publisher_fetchNameBeginningWith($requestVars['tag'], array($sessionUser->getUserAddress()), $sessionUser->getUserAddress()) as $tag){
 				$res[] = $tag['name'];
 			}
 		}
-		LibRest::sendResponse(200, 
-			json_encode($res),	
+		LibRest::sendResponse(200,
+			json_encode($res),
 			'application/json');
 		break;
-		
+
 	case 'user_fetchAllActivatedContaining':
 		$res = array();
 		if(isset($requestVars['tag'])){
@@ -227,18 +228,18 @@ switch($requestVars['action']){
 				$res[] = $user['username'];
 			}
 		}
-		LibRest::sendResponse(200, 
+		LibRest::sendResponse(200,
 			json_encode($res),
 			'application/json');
 		break;
-		
+
 	case 'export_word2007':
 		if(!isset($requestVars['id']) || !is_numeric($requestVars['id']))
 			LibExport::printWord2007All($sessionUser);
 		else
 			LibExport::printWord2007Single($sessionUser, $requestVars['id']);
 		break;
-		
+
 	case 'export_bibtex':
 		if(!isset($requestVars['id']) || !is_numeric($requestVars['id']))
 			LibExport::printBibtexAll($sessionUser);
@@ -267,6 +268,6 @@ switch($requestVars['action']){
 			LibExport::printModsXmlSingle($sessionUser, $requestVars['id']);
 		break;
 
-	default: 
+	default:
 			LibRest::sendResponse(400, 'The parameter "action" is not set correctly.');
 }

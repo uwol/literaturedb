@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
 This file is part of literaturedb.
 
@@ -21,7 +21,7 @@ ini_set('arg_separator.output', '&amp;');
 @session_start();
 
 if((isset($_REQUEST['session_destroy']) && $_REQUEST['session_destroy'] == 1) ||
-		(isset($_SESSION['session_timeout_timestamp']) && 
+		(isset($_SESSION['session_timeout_timestamp']) &&
 		($_SESSION['session_timeout_timestamp'] == "" || $_SESSION['session_timeout_timestamp'] < time()))){
 	@session_destroy();
 	@session_start();
@@ -30,19 +30,18 @@ if((isset($_REQUEST['session_destroy']) && $_REQUEST['session_destroy'] == 1) ||
 $_SESSION['session_timeout_timestamp'] = time() + 43200;
 
 
-/**
+/*
 * DB
 */
 LibDb::connect();
 
 
-/**
+/*
 * Authentication
 */
 if(isset($_SESSION['sessionUser'])){
 	$sessionUser =& $_SESSION['sessionUser'];
-}
-else{
+} else {
 	$sessionUser = new LibUser();
 }
 
@@ -71,12 +70,13 @@ if(isset($_POST['selectedUserAddress'])){
 	// if all shares are selected
 	if($_POST['selectedUserAddress'] == 'all_users'){
 		$selectedUserAddresses[] = LibString::protectXSS($sessionUser->getUsername());
-		
+
 		$shares = LibRouter::share_fetchAllFollowedByLocalUserId($sessionUser->getId(), $sessionUser->getUserAddress());
+
 		foreach($shares as $share){
 			$selectedUserAddresses[] = LibUser::buildCanonicalUserAddress($share['remote_user_address']);
 		}
-	}elseif(!in_array($_POST['selectedUserAddress'], $selectedUserAddresses)){
+	} elseif(!in_array($_POST['selectedUserAddress'], $selectedUserAddresses)){
 		$selectedUserAddresses[] = LibUser::buildCanonicalUserAddress($_POST['selectedUserAddress']);
 	}
 
@@ -86,7 +86,6 @@ if(isset($_POST['selectedUserAddress'])){
 if(isset($_SESSION['selectedUserAddresses'])){
 	LibGlobal::$selectedUserAddresses = $_SESSION['selectedUserAddresses'];
 }
-
 
 $pid = '';
 if(isset($_REQUEST['pid'])){

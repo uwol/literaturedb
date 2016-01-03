@@ -34,12 +34,13 @@ class LibRest{
 		$request->setMethod($method);
 		$request->setVars($data);
 
-		if(isset($data['data']))
+		if(isset($data['data'])){
 			$request->setData(json_decode($data['data']));
-		
+		}
+
 		return $request;
 	}
-	
+
 	public static function getStatusMessage($status){
 		$codes = Array(
 		    200 => 'OK',
@@ -59,8 +60,7 @@ class LibRest{
 		if($body != ''){
 			echo $body;
 			exit;
-		}
-		else {
+		} else {
 			$message = '';
 
 			switch($status){
@@ -119,7 +119,6 @@ class LibRestRequest{
 		$this->method = $method;
 	}
 
-
 	public function getData(){
 		return $this->data;
 	}
@@ -127,11 +126,11 @@ class LibRestRequest{
 	public function getVars(){
 		return $this->vars;
 	}
-	
+
 	public function getMethod(){
 		return $this->method;
 	}
-	
+
 	public function getHttpAccept(){
 		return $this->httpAccept;
 	}

@@ -17,33 +17,39 @@ along with literaturedb. If not, see <http://www.gnu.org/licenses/>.
 */
 
 if(LibGlobal::ldapIsEnabled()){
-	if(!isset(LibConfig::$ldapCentralUserManagementSite))
+	if(!isset(LibConfig::$ldapCentralUserManagementSite)){
 		LibGlobal::$errorTexts[] = "LDAP: In systemconfig.php the setting ldapCentralUserManagementSite should be configured.";
-	if(!isset(LibConfig::$ldapLoginExplanation))
-		LibGlobal::$errorTexts[] = "LDAP: In systemconfig.php the setting ldapLoginExplanation should be configured.";	
+	}
+
+	if(!isset(LibConfig::$ldapLoginExplanation)){
+		LibGlobal::$errorTexts[] = "LDAP: In systemconfig.php the setting ldapLoginExplanation should be configured.";
+	}
 }
 
 /*
 * Action
 */
 if(isset($_POST['reset_emailaddress']) && $_POST['reset_emailaddress'] != ""){
-	if(LibGlobal::ldapIsEnabled())
+	if(LibGlobal::ldapIsEnabled()){
 		die('Resetting passwords is disabled because LDAP is enabled in the config.');
+	}
 
 	if(LibUser::isValidEmailAddress($_POST['reset_emailaddress'])){ //is the email address valid?
 		$user = LibUser::fetchByEmailAddress($_POST['reset_emailaddress']);
 
 		if(is_numeric($user['id'])){
 			$newPassword = LibString::randomAlphaNumericString(20);
-			while(!LibUser::isValidPassword($newPassword))
+
+			while(!LibUser::isValidPassword($newPassword)){
 				$newPassword = LibString::randomAlphaNumericString(20);
-			
+			}
+
 			$passwordHash = LibUser::encryptPassword($newPassword);
-		
+
 			$user['password_hash'] = $passwordHash;
 
 			LibUser::save($user);
-		
+
 			$text = "Your password has been changed for the site ".LibConfig::$sitePath." for the username ".LibString::protectXSS($user['username'])." with the email address " .LibString::protectXSS($user['emailaddress']). ". The new password is: ".LibString::protectXSS($newPassword);
 
 			include 'lib/thirdparty/phpmailer/class.phpmailer.php';
@@ -64,14 +70,16 @@ if(isset($_POST['reset_emailaddress']) && $_POST['reset_emailaddress'] != ""){
 				$mail->Username = LibConfig::$smtpUsername;
 				$mail->Password = LibConfig::$smtpPassword;
 			}
-			
+
 			$mail->Send();
 		}
+
 		LibGlobal::$notificationTexts[] = "If the email address is registered, a new password has been sent to it.";
-	}
-	else
+	} else {
 		LibGlobal::$errorTexts[] = "The email address is not valid.";
+	}
 }
+
 /*
 * Output
 */
@@ -99,15 +107,16 @@ else
 	echo '			<p><img src="img/icons/add.png" alt="add" /> <a href="index.php?pid=literaturedb_register">Register a new user account</a></p>';
 ?>
 			<p style="margin-bottom:0"><img src="img/icons/heart.png" alt="add" /> <a href="http://www.literaturedb.com">Show me the features</a></p>
-			
+
 		</fieldset>
 	</form>
-	
+
 	<h2>Lost your password?</h2>
 <?php
-if(LibGlobal::ldapIsEnabled())
+if(LibGlobal::ldapIsEnabled()){
 	echo 'You can change your user details <a href="'.LibConfig::$ldapCentralUserManagementSite.'">here</a>.';
-else
+} else {
 	echo '<form method="post" action="index.php"><fieldset><label>email address<br /><input type="text" name="reset_emailaddress" size="15" class="input_text" /></label><input type="submit" value="Send new password" class="input_button" /></fieldset></form>';
+}
 ?>
 </div>

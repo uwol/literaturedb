@@ -19,7 +19,7 @@ along with literaturedb. If not, see <http://www.gnu.org/licenses/>.
 class LibMime{
 	static function determineMime($extension){
   		$mime = '';
-  
+
   		switch ($extension) {
    			case 'avi': $mime='video/x-msvideo'; break;
    			case 'bmp': $mime='image/bmp'; break;

@@ -18,13 +18,14 @@ along with literaturedb. If not, see <http://www.gnu.org/licenses/>.
 
 include "lib/masterinclude.php";
 include "lib/initialize.php";
+
 if(!$sessionUser->isLoggedIn())
 	die();
 
 if($_GET['mode'] == 'literaturedb_document'){
 	$documentAddress = $_GET['documentAddress'];
 	$document = LibRouter::document_fetch($documentAddress, $sessionUser->getUserAddress());
-	
+
 	$mime = LibMime::determineMime($document['extension']);
 	$extensionString = $document['extension'] != '' ? '.' . $document['extension'] : '';
 	$filename = $document['filename'] . $extensionString;

@@ -19,31 +19,36 @@ along with literaturedb. If not, see <http://www.gnu.org/licenses/>.
 class LibView{
 	static function documents_lastDocumentRows($documents) {
 		$retstr = '';
+
 		if(is_array($documents)){
 			foreach($documents as $document){
 				$retstr .= '<tr>';
-	
+
 				$retstr .= '<td style="width:85%;padding-bottom:5px" ' .LibString::getAlienStringClassText(LibDocument::isOwnDocument($document)). '>';
 				$retstr .= '<a href="index.php?pid=literaturedb_document&amp;documentAddress=' .LibString::protectXSS(LibDocument::buildMinimalDocumentAddress($document['document_address'])). '">';
-				if($document['title'] != '')
+
+				if($document['title'] != ''){
 					$retstr .= LibString::protectXSS(LibString::truncate($document['title'], 50, ' ...'));
-				else
+				} else {
 					$retstr .= 'missing title';
+				}
+
 				$retstr .= '</a><br />';
 				$retstr .= '<div class="authors">' . LibDocument::buildAuthorsString($document) . '</div>';
 				$retstr .= '<div class="tags">' . LibDocument::buildTagsString($document) . '</div>';
 				$retstr .= '</td>';
-		
+
 				$retstr .= '<td style="width:15%;padding-bottom:5px">' . LibString::protectXSS(substr($document['datetime_created'], 0, 10)) . '</td>';
 				$retstr .= '</tr>';
 			}
 		}
+
 		return $retstr;
 	}
-	
+
 	static function documents_tagCloud($tags){
 		$retstr = '';
-		$tagLinks = array();	
+		$tagLinks = array();
 
 		if(is_array($tags)){
 			$tagLinks[] = '<span class="weight9"><a href="index.php?pid=literaturedb_documents&amp;tag=!notag">!notag</a></span>';
@@ -51,29 +56,32 @@ class LibView{
 			foreach($tags as $tag){
 				$tagLinks[] = '<span class="weight' . $tag['weight_relative'] . LibString::getAlienStringText(LibTag::isOwnTag($tag)). '"><a href="index.php?pid=literaturedb_documents&amp;tag=' .LibString::protectXSS($tag['name']). '">' . LibString::protectXSS($tag['name']) . '</a></span>';
 			}
-		}
-		else
+		} else {
 			$retstr .= $tags;
-		if(count($tagLinks) > 0)
+		}
+
+		if(count($tagLinks) > 0){
 			$retstr .= implode(" ", $tagLinks);
+		}
 
 		return $retstr;
 	}
-	
+
 	static function documents_authorCloud($authors){
 		$retstr = '';
-		$authorLinks = array();		
+		$authorLinks = array();
 
 		if(is_array($authors)){
 			foreach($authors as $author){
 				$authorLinks[] = '<span class="weight' . $author['weight_relative'] . LibString::getAlienStringText(LibPerson::isOwnPerson($author)) . '"><a href="index.php?pid=literaturedb_person&amp;personAddress=' .LibString::protectXSS(LibPerson::buildMinimalPersonAddress($author['person_address'])). '">' . LibString::protectXSS($author['lastname']) . '</a></span>';
 			}
-		}
-		else
+		} else {
 			$retstr .= $authors;
+		}
 
-		if(count($authorLinks) > 0)
+		if(count($authorLinks) > 0){
 			$retstr .= implode(" ", $authorLinks);
+		}
 
 		return $retstr;
 	}

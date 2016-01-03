@@ -25,6 +25,7 @@ class LibRouter{
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
 
 		$documents = array();
+
 		foreach($askedUserAddresses as $askedUserAddress){
 			$askedUserAddress = LibUser::buildCanonicalUserAddress($askedUserAddress);
 
@@ -36,9 +37,10 @@ class LibRouter{
 				}
 			}
 		}
+
 		return $documents;
 	}
-	
+
 	static function document_mayFetchAll($askedUserAddress, $askingUserAddress){
 		return self::mayProcessRequest($askedUserAddress, $askingUserAddress);
 	}
@@ -48,101 +50,113 @@ class LibRouter{
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
 
 		$documents = array();
+
 		foreach($askedUserAddresses as $askedUserAddress){
 			$askedUserAddress = LibUser::buildCanonicalUserAddress($askedUserAddress);
-			if(LibUser::isLocalUserAddress($askedUserAddress)){				
+
+			if(LibUser::isLocalUserAddress($askedUserAddress)){
 				if(self::document_mayFetchLast($askedUserAddress, $askingUserAddress)){
 					$askedUser = LibUser::fetchByUserAddress($askedUserAddress, $limit);
 
 					$documents = array_merge($documents, LibDocument::fetchLast($askedUser['id'], $offset, $limit));
-				}
-				else
+				} else {
 					return $askedUserAddress .' does not share documents with you.';
-			}
-			else{
+				}
+			} else {
 				$remoteDocuments = self::remoteCall(
-					LibUser::getDomainPart($askedUserAddress), 
-					$askingUserAddress, 
+					LibUser::getDomainPart($askedUserAddress),
+					$askingUserAddress,
 					'document_fetchLast',
 					array('askedUserAddress' => $askedUserAddress, 'offset' => $offset, 'limit' => $limit));
-				if(is_array($remoteDocuments))
+
+				if(is_array($remoteDocuments)){
 					$documents = array_merge($documents, $remoteDocuments);
-				else
+				} else {
 					return $remoteDocuments;
+				}
 			}
 		}
+
 		return $documents;
 	}
-	
+
 	static function document_mayFetchLast($askedUserAddress, $askingUserAddress){
 		return self::mayProcessRequest($askedUserAddress, $askingUserAddress);
 	}
-		
+
 	//@Remote
 
 	static function document_fetchWithoutTag($askedUserAddresses, $askingUserAddress){
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
 		$documents = array();
+
 		foreach($askedUserAddresses as $askedUserAddress){
 			$askedUserAddress = LibUser::buildCanonicalUserAddress($askedUserAddress);
-			if(LibUser::isLocalUserAddress($askedUserAddress)){	
+
+			if(LibUser::isLocalUserAddress($askedUserAddress)){
 				if(self::document_mayFetchWithoutTag($askedUserAddress, $askingUserAddress)){
 					$askedUser = LibUser::fetchByUserAddress($askedUserAddress);
 					$documents = array_merge($documents, LibDocument::fetchWithoutTag($askedUser['id']));
-				}	
-				else
+				} else {
 					return $askedUserAddress .' does not share documents without tags with you.';
-			}
-			else{
+				}
+			} else {
 				$remoteDocuments = self::remoteCall(
-					LibUser::getDomainPart($askedUserAddress), 
-					$askingUserAddress, 
+					LibUser::getDomainPart($askedUserAddress),
+					$askingUserAddress,
 					'document_fetchWithoutTag',
 					array('askedUserAddress' => $askedUserAddress));
-				if(is_array($remoteDocuments))
+
+				if(is_array($remoteDocuments)){
 					$documents = array_merge($documents, $remoteDocuments);
-				else
+				} else {
 					return $remoteDocuments;
+				}
 			}
 		}
+
 		return $documents;
 	}
-	
+
 	static function document_mayFetchWithoutTag($askedUserAddress, $askingUserAddress){
 		return self::mayProcessRequest($askedUserAddress, $askingUserAddress);
 	}
-	
+
 	//@Remote
 
 	static function document_fetchWithTag($tag, $askedUserAddresses, $askingUserAddress){
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
 
 		$documents = array();
+
 		foreach($askedUserAddresses as $askedUserAddress){
 			$askedUserAddress = LibUser::buildCanonicalUserAddress($askedUserAddress);
+
 			if(LibUser::isLocalUserAddress($askedUserAddress)){
 				if(self::document_mayFetchWithTag($askedUserAddress, $askingUserAddress)){
 					$askedUser = LibUser::fetchByUserAddress($askedUserAddress);
 					$documents = array_merge($documents, LibDocument::fetchWithTag($tag, $askedUser['id']));
-				}
-				else
+				} else {
 					return $askedUserAddress .' does not share tagged documents with you.';
-			}	
-			else{
+				}
+			} else {
 				$remoteDocuments = self::remoteCall(
-					LibUser::getDomainPart($askedUserAddress), 
-					$askingUserAddress, 
+					LibUser::getDomainPart($askedUserAddress),
+					$askingUserAddress,
 					'document_fetchWithTag',
 					array('askedUserAddress' => $askedUserAddress, 'tag' => $tag));
-				if(is_array($remoteDocuments))
+
+				if(is_array($remoteDocuments)){
 					$documents = array_merge($documents, $remoteDocuments);
-				else
+				} else {
 					return $remoteDocuments;
+				}
 			}
 		}
+
 		return $documents;
 	}
-	
+
 	static function document_mayFetchWithTag($askedUserAddress, $askingUserAddress){
 		return self::mayProcessRequest($askedUserAddress, $askingUserAddress);
 	}
@@ -151,64 +165,70 @@ class LibRouter{
 	static function document_fetchWithSearch($searchString, $askedUserAddresses, $askingUserAddress){
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
 		$documents = array();
+
 		foreach($askedUserAddresses as $askedUserAddress){
 			$askedUserAddress = LibUser::buildCanonicalUserAddress($askedUserAddress);
+
 			if(LibUser::isLocalUserAddress($askedUserAddress)){
 				if(self::document_mayFetchWithSearch($askedUserAddress, $askingUserAddress)){
 					$askedUser = LibUser::fetchByUserAddress($askedUserAddress);
 					$documents = array_merge($documents, LibDocument::fetchWithSearch($searchString, $askedUser['id']));
-				}
-				else
+				} else {
 					return $askedUserAddress .' does not share searched documents with you.';
-			}
-			else{
+				}
+			} else {
 				$remoteDocuments = self::remoteCall(
-					LibUser::getDomainPart($askedUserAddress), 
-					$askingUserAddress, 
+					LibUser::getDomainPart($askedUserAddress),
+					$askingUserAddress,
 					'document_fetchWithSearch',
 					array('askedUserAddress' => $askedUserAddress, 'searchString' => $searchString));
-				if(is_array($remoteDocuments))
+
+				if(is_array($remoteDocuments)){
 					$documents = array_merge($documents, $remoteDocuments);
-				else
+				} else {
 					return $remoteDocuments;
+				}
 			}
 		}
+
 		return $documents;
 	}
-	
+
 	static function document_mayFetchWithSearch($askedUserAddress, $askingUserAddress){
 		return self::mayProcessRequest($askedUserAddress, $askingUserAddress);
 	}
-	
+
 	//@Remote
 	static function document_fetchWithAuthor($authorAddress, $askingUserAddress){
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
 
 		$authorAddress = LibUser::buildCanonicalUserAddress($authorAddress);
 		$documents = array();
+
 		if(LibPerson::isLocalPersonAddress($authorAddress)){
 			if(self::document_mayFetchWithAuthor($authorAddress, $askingUserAddress)){
 				$authorId = LibPerson::getLocalPart($authorAddress);
 				$documents = array_merge($documents, LibDocument::fetchWithAuthor($authorId));
-			}
-			else
+			} else {
 				return 'The user does not allow you to fetch his documents.';
-		}
-		else{
+			}
+		} else {
 			$remoteDocuments = self::remoteCall(
-				LibPerson::getDomainPart($authorAddress), 
-				$askingUserAddress, 
+				LibPerson::getDomainPart($authorAddress),
+				$askingUserAddress,
 				'document_fetchWithAuthor',
 				array('authorAddress' => $authorAddress));
-			if(is_array($remoteDocuments))
-				$documents = array_merge($documents, $remoteDocuments);
-			else
-				return $remoteDocuments;
 
+			if(is_array($remoteDocuments)){
+				$documents = array_merge($documents, $remoteDocuments);
+			} else {
+				return $remoteDocuments;
+			}
 		}
+
 		return $documents;
 	}
-	
+
 	static function document_mayFetchWithAuthor($askedPersonAddress, $askingUserAddress){
 		$personInDb = LibPerson::fetch(LibPerson::getLocalPart($askedPersonAddress));
 		$askedUser = LibUser::fetch($personInDb['user_id']);
@@ -216,25 +236,25 @@ class LibRouter{
 
 		return self::mayProcessRequest($askedUserAddress, $askingUserAddress);
 	}
-	
+
 	//------------------------
-	
+
 	//@Remote
 	static function document_fetch($askedDocumentAddress, $askingUserAddress){
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
 		$askedDocumentAddress = LibDocument::buildCanonicalDocumentAddress($askedDocumentAddress);
-		
-		if(LibDocument::isLocalDocumentAddress($askedDocumentAddress)){	
-			if(self::document_mayFetch($askedDocumentAddress, $askingUserAddress))
+
+		if(LibDocument::isLocalDocumentAddress($askedDocumentAddress)){
+			if(self::document_mayFetch($askedDocumentAddress, $askingUserAddress)){
 				return LibDocument::fetch(LibDocument::getLocalPart($askedDocumentAddress));
-			else
+			} else {
 				return 'The user does not allow you to fetch his documents.';
-		}
-		else{
+			}
+		} else {
 			return self::remoteCall(
-				LibDocument::getDomainPart($askedDocumentAddress), 
-				$askingUserAddress, 
-				'document_fetch', 
+				LibDocument::getDomainPart($askedDocumentAddress),
+				$askingUserAddress,
+				'document_fetch',
 				array('askedDocumentAddress' => $askedDocumentAddress));
 		}
 	}
@@ -245,7 +265,7 @@ class LibRouter{
 		$askedUserAddress = LibUser::buildCanonicalUserAddress($askedUser['username']);
 		return self::mayProcessRequest($askedUserAddress, $askingUserAddress);
 	}
-	
+
 	//@Remote
 	static function document_fetchFileContents($askedDocumentAddress, $askingUserAddress){
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
@@ -253,24 +273,23 @@ class LibRouter{
 		$document = self::document_fetch($askedDocumentAddress, $askingUserAddress);
 
 		if(is_array($document)){ //could the document be fetched successfully?
-			if(LibDocument::isLocalDocumentAddress($askedDocumentAddress)){	
+			if(LibDocument::isLocalDocumentAddress($askedDocumentAddress)){
 				if(self::document_mayFetchFileContents($askedDocumentAddress, $askingUserAddress)){
 					if($document['hash'] != ''){
 						$filePath = LibDocument::getFilePath($document['hash']);
-						
+
 						$handle = fopen($filePath, "rb");
 						$contents = fread($handle, filesize($filePath));
 						fclose($handle);
-						
+
 						return $contents;
 					}
 				}
-			}
-			else{
+			} else {
 				return self::remoteCall(
-					LibDocument::getDomainPart($askedDocumentAddress), 
-					$askingUserAddress, 
-					'document_fetchFileContents', 
+					LibDocument::getDomainPart($askedDocumentAddress),
+					$askingUserAddress,
+					'document_fetchFileContents',
 					array('askedDocumentAddress' => $askedDocumentAddress));
 			}
 		}
@@ -288,12 +307,13 @@ class LibRouter{
 	static function document_fetchByHash($hash, $askedUserAddress, $askingUserAddress){
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
 		$askedUserAddress = LibUser::buildCanonicalUserAddress($askedUserAddress);
+
 		if(self::document_mayFetchByHash($askedUserAddress, $askingUserAddress)){
 			$askedUser = LibUser::fetchByUserAddress($askedUserAddress);
 			return LibDocument::fetchByHash($hash, $askedUser['id']);
 		}
 	}
-	
+
 	static function document_mayFetchByHash($askedUserAddress, $askingUserAddress){
 		return self::mayProcessRequest($askedUserAddress, $askingUserAddress);
 	}
@@ -302,14 +322,14 @@ class LibRouter{
 	static function document_save($document, $askingUserAddress){
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
 
-		if(self::document_maySave($document, $askingUserAddress)) //may save this document?
+		if(self::document_maySave($document, $askingUserAddress)){ //may save this document?
 			return LibDocument::save($document);
-		else{ //may not save this document under this id. Solution: copy document
+		} else { //may not save this document under this id. Solution: copy document
 			$documentInDb = LibDocument::fetch($document['id']);
 			$documentByHash = self::document_fetchByHash($documentInDb['hash'], $askingUserAddress, $askingUserAddress);
-			if(isset($documentByHash['hash']) && $documentByHash['hash'] != '') //is document with this hash already owned by user?
+			if(isset($documentByHash['hash']) && $documentByHash['hash'] != ''){ //is document with this hash already owned by user?
 				return $documentByHash['id'];
-			else{ //copy this document to the documents of the user
+			} else { //copy this document to the documents of the user
 				$document['id'] = ''; //mark document as a new record
 				$document['hash'] = $documentInDb['hash'];
 				$document['filename'] = $documentInDb['filename'];
@@ -320,39 +340,47 @@ class LibRouter{
 			}
 		}
 	}
-	
+
 	static function document_maySave($document, $askingUserAddress){
-		if(!isset($document['id']))
+		if(!isset($document['id'])){
 			return true;
+		}
+
 		$documentInDb = LibDocument::fetch($document['id']);
 		$askingUser = LibUser::fetchByUserAddress($askingUserAddress);
 
 		//new document or document owned by this user?
-		if(!is_array($documentInDb) || !isset($documentInDb['id']) || $documentInDb['id'] == '' 
-				|| $documentInDb['user_id'] == $askingUser['id'])
+		if(!is_array($documentInDb) || !isset($documentInDb['id']) || $documentInDb['id'] == ''
+				|| $documentInDb['user_id'] == $askingUser['id']){
 			return true;
+		}
+
 		return false;
 	}
-	
+
 	//@Local ------------------------------------------------------------------
 
 	static function document_delete($documentAddress, $askingUserAddress){
 		$documentId = LibDocument::getLocalPart($documentAddress);
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
 
-		if(self::document_mayDelete($documentId, $askingUserAddress))
+		if(self::document_mayDelete($documentId, $askingUserAddress)){
 			return LibDocument::delete($documentId);
+		}
 	}
-	
+
 	static function document_mayDelete($documentId, $askingUserAddress){
 		$documentInDb = LibDocument::fetch($documentId);
 		$askingUser = LibUser::fetchByUserAddress($askingUserAddress);
-		if($documentInDb['id'] > 0 && $documentInDb['user_id'] == $askingUser['id'])
+
+		if($documentInDb['id'] > 0 && $documentInDb['user_id'] == $askingUser['id']){
 			return true;
+		}
+
 		return false;
 	}
-	
-	
+
+
 	/*
 	* tag
 	*/
@@ -363,29 +391,32 @@ class LibRouter{
 		$tags = array();
 		foreach($askedUserAddresses as $askedUserAddress){
 			$askedUserAddress = LibUser::buildCanonicalUserAddress($askedUserAddress);
+
 			if(LibUser::isLocalUserAddress($askedUserAddress)){
 				if(self::tag_mayFetchAll($askedUserAddress, $askingUserAddress)){
 					$askedUser = LibUser::fetchByUserAddress($askedUserAddress);
 					$tags = array_merge($tags, LibTag::fetchAll($askedUser['id'], $offset, $limit));
-				}
-				else
+				} else {
 					return $askedUserAddress .' does not share tags with you.';
-			}
-			else{
+				}
+			} else {
 				$remoteTags = self::remoteCall(
-					LibUser::getDomainPart($askedUserAddress), 
-					$askingUserAddress, 
+					LibUser::getDomainPart($askedUserAddress),
+					$askingUserAddress,
 					'tag_fetchAll',
 					array('askedUserAddress' => $askedUserAddress, 'offset' => $offset, 'limit' => $limit));
-				if(is_array($remoteTags))
+
+				if(is_array($remoteTags)){
 					$tags = array_merge($tags, $remoteTags);
-				else
+				} else {
 					return $remoteTags;
+				}
 			}
 		}
+
 		return $tags;
 	}
-	
+
 	static function tag_mayFetchAll($askedUserAddress, $askingUserAddress){
 		return self::mayProcessRequest($askedUserAddress, $askingUserAddress);
 	}
@@ -395,6 +426,7 @@ class LibRouter{
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
 
 		$tags = array();
+
 		foreach($askedUserAddresses as $askedUserAddress){
 			$askedUserAddress = LibUser::buildCanonicalUserAddress($askedUserAddress);
 
@@ -405,58 +437,65 @@ class LibRouter{
 				}
 			}
 		}
+
 		return $tags;
 	}
-	
+
 	static function tag_mayFetchNameBeginningWith($userId, $authId){
 		return true;
 	}
-	
+
 	//------------------------
-	
+
 	/*
 	* person
-	*/	
+	*/
 	//@Remote
 	static function person_fetchAllAuthors($askedUserAddresses, $askingUserAddress, $offset = 0, $limit = 100){
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
 		$authors = array();
+
 		foreach($askedUserAddresses as $askedUserAddress){
 			$askedUserAddress = LibUser::buildCanonicalUserAddress($askedUserAddress);
+
 			if(LibUser::isLocalUserAddress($askedUserAddress)){
 				if(self::person_mayFetchAllAuthors($askedUserAddress, $askingUserAddress)){
 					$askedUser = LibUser::fetchByUserAddress($askedUserAddress);
 					$authors = array_merge($authors, LibPerson::fetchAllAuthors($askedUser['id'], $offset, $limit));
-				}
-				else
+				} else {
 					return $askedUserAddress .' does not share authors with you.';
-			}
-			else{
+				}
+			} else {
 				$remoteAuthors = self::remoteCall(
-					LibUser::getDomainPart($askedUserAddress), 
-					$askingUserAddress, 
+					LibUser::getDomainPart($askedUserAddress),
+					$askingUserAddress,
 					'person_fetchAllAuthors',
 					array('askedUserAddress' => $askedUserAddress, 'offset' => $offset, 'limit' => $limit));
-				if(is_array($remoteAuthors))
+
+				if(is_array($remoteAuthors)){
 					$authors = array_merge($authors, $remoteAuthors);
-				else
+				} else {
 					return $remoteAuthors;
+				}
 			}
 		}
+
 		return $authors;
 	}
-	
+
 	static function person_mayFetchAllAuthors($askedUserAddress, $askingUserAddress){
 		return self::mayProcessRequest($askedUserAddress, $askingUserAddress);
 	}
-	
+
 	//@Local ------------------------------------------------------------------
 
 	static function person_fetchNameBeginningWith($beginning, $askedUserAddresses, $askingUserAddress){
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
 		$persons = array();
+
 		foreach($askedUserAddresses as $askedUserAddress){
 			$askedUserAddress = LibUser::buildCanonicalUserAddress($askedUserAddress);
+
 			if(LibUser::isLocalUserAddress($askedUserAddress)){
 				if(self::person_mayFetchNameBeginningWith($askedUserAddress, $askingUserAddress)){
 					$askedUser = LibUser::fetchByUserAddress(LibUser::getLocalPart($askedUserAddress));
@@ -464,55 +503,58 @@ class LibRouter{
 				}
 			}
 		}
+
 		return $persons;
 	}
-	
+
 	static function person_mayFetchNameBeginningWith($askedUserAddress, $askingUserAddress){
 		return true;
 	}
-	
+
 	//------------------------
 	//@Remote
 	static function person_fetch($askedPersonAddress, $askingUserAddress){
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
 		$askedPersonAddress = LibPerson::buildCanonicalPersonAddress($askedPersonAddress);
-		if(LibPerson::isLocalPersonAddress($askedPersonAddress)){	
-			if(self::person_mayFetch($askedPersonAddress, $askingUserAddress))
+
+		if(LibPerson::isLocalPersonAddress($askedPersonAddress)){
+			if(self::person_mayFetch($askedPersonAddress, $askingUserAddress)){
 				return LibPerson::fetch(LibPerson::getLocalPart($askedPersonAddress));
-			else
+			} else {
 				return 'The user does not allow you to fetch this person.';
-		}
-		else{
+			}
+		} else {
 			return self::remoteCall(
-				LibDocument::getDomainPart($askedPersonAddress), 
-				$askingUserAddress, 
-				'person_fetch', 
+				LibDocument::getDomainPart($askedPersonAddress),
+				$askingUserAddress,
+				'person_fetch',
 				array('askedPersonAddress' => $askedPersonAddress));
 		}
 	}
-	
+
 	static function person_mayFetch($askedPersonAddress, $askingUserAddress){
 		$personInDb = LibPerson::fetch(LibPerson::getLocalPart($askedPersonAddress));
 		$askedUser = LibUser::fetch($personInDb['user_id']);
 		$askedUserAddress = LibUser::buildCanonicalUserAddress($askedUser['username']);
 		return self::mayProcessRequest($askedUserAddress, $askingUserAddress);
-	}	
+	}
 
-	
+
 	//@Local ------------------------------------------------------------------
 	static function person_save($person, $askingUserAddress){
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
 
-		if(self::person_maySave($person, $askingUserAddress))
+		if(self::person_maySave($person, $askingUserAddress)){
 			return LibPerson::save($person);
+		}
 	}
-	
+
 	static function person_maySave($person, $askingUserAddress){
 		//determine userAddress of person, and check if askingUserAddress is permitted to save it !!!
-		return true; 
+		return true;
 	}
-	
-	
+
+
 	/*
 	* Publisher
 	*/
@@ -521,8 +563,10 @@ class LibRouter{
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
 
 		$publishers = array();
+
 		foreach($askedUserAddresses as $askedUserAddress){
 			$askedUserAddress = LibUser::buildCanonicalUserAddress($askedUserAddress);
+
 			if(LibUser::isLocalUserAddress($askedUserAddress)){
 				if(self::person_mayFetchNameBeginningWith($askedUserAddress, $askingUserAddress)){
 					$askedUser = LibUser::fetchByUserAddress($askedUserAddress);
@@ -530,13 +574,14 @@ class LibRouter{
 				}
 			}
 		}
+
 		return $publishers;
 	}
-	
+
 	static function publisher_mayFetchNameBeginningWith($askedUserAddress, $askingUserAddress){
 		return true;
 	}
-		
+
 
 
 	/*
@@ -547,6 +592,7 @@ class LibRouter{
 	static function journal_fetchNameBeginningWith($beginning, $askedUserAddresses, $askingUserAddress){
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
 		$journals = array();
+
 		foreach($askedUserAddresses as $askedUserAddress){
 			$askedUserAddress = LibUser::buildCanonicalUserAddress($askedUserAddress);
 
@@ -557,13 +603,14 @@ class LibRouter{
 				}
 			}
 		}
+
 		return $journals;
 	}
 
 	static function journal_mayFetchNameBeginningWith($askedUserAddress, $askingUserAddress){
 		return true;
 	}
-	
+
 	/*
 	* Share
 	*/
@@ -571,37 +618,46 @@ class LibRouter{
 	static function share_fetchAllByLocalUserId($localUserId, $askingUserAddress){
 		return LibShare::fetchAllByLocalUserId($localUserId);
 	}
-	
+
 	static function share_fetchAllFollowedByLocalUserId($localUserId, $askingUserAddress){
 		return LibShare::fetchAllFollowedByLocalUserId($localUserId);
 	}
-	
+
 	//@Local ------------------------------------------------------------------
 	static function share_delete($shareId, $askingUserAddress){
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
-		if(self::share_mayDelete($shareId, $askingUserAddress))
+
+		if(self::share_mayDelete($shareId, $askingUserAddress)){
 			return LibShare::delete($shareId);
+		}
 	}
-	
+
 	static function share_mayDelete($shareId, $askingUserAddress){
 		$shareInDb = LibShare::fetch($shareId);
 		$askingUser = LibUser::fetchByUserAddress($askingUserAddress);
-		if($shareInDb['id'] > 0 && $shareInDb['local_user_id'] == $askingUser['id']) 
+
+		if($shareInDb['id'] > 0 && $shareInDb['local_user_id'] == $askingUser['id']){
 			return true;
+		}
+
 		return false;
 	}
-	
+
 	//@Local ------------------------------------------------------------------
 	static function share_save($share, $askingUserAddress){
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
-		if(self::share_maySave($share, $askingUserAddress))
+
+		if(self::share_maySave($share, $askingUserAddress)){
 			return LibShare::save($share);
+		}
 	}
-	
+
 	static function share_maySave($share, $askingUserAddress){
 		$askingUser = LibUser::fetchByUserAddress($askingUserAddress);
-		if($share['local_user_id'] == $askingUser['id'])
+
+		if($share['local_user_id'] == $askingUser['id']){
 			return true;
+		}
 	}
 
 	/*
@@ -616,58 +672,68 @@ class LibRouter{
 	static function user_fetchAllActivated($askingUserAddress){
 		return LibUser::fetchAllActivated();
 	}
-	
+
 	//@Local ------------------------------------------------------------------
 	static function user_delete($userId, $askingUserAddress){
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
 		if(self::user_mayDelete($userId, $askingUserAddress))
 			return LibUser::delete($userId);
 	}
-	
+
 	static function user_mayDelete($userId, $askingUserAddress){
 		$userInDb = LibUser::fetch($userId);
 		$askingUser = LibUser::fetchByUserAddress($askingUserAddress);
-		if($userInDb['id'] > 0 && $userInDb['id'] == $askingUser['id']) 
+
+		if($userInDb['id'] > 0 && $userInDb['id'] == $askingUser['id']){
 			return true;
+		}
+
 		return false;
 	}
-	
+
 	/*
 	* Helper
 	*/
 	static function remoteCall($askedDomain, $askingUserAddress, $action, $params = array()){
 		$url = 'http://' .$askedDomain. '/api.php?action=' .$action. '&askingUserAddress='. $askingUserAddress;
 
-		foreach($params as $key => $value)
+		foreach($params as $key => $value){
 			$url .= '&'.$key.'='.$value;
+		}
+
 		$response = self::downloadContent($url);
-		if($response === false)
+
+		if($response === false){
 			return 'A connection to the remote literature database could not be established.';
-		elseif($action == 'document_fetchFileContents')
+		} elseif($action == 'document_fetchFileContents'){
 			return $response;
-		else
+		} else {
 			return json_decode(utf8_encode($response), true);
+		}
 	}
-	
+
 	static function mayProcessRequest($askedUserAddress, $askingUserAddress){
 		$askedUserAddress = LibUser::buildCanonicalUserAddress($askedUserAddress);
 		$askingUserAddress = LibUser::buildCanonicalUserAddress($askingUserAddress);
-		
-		if($askedUserAddress == $askingUserAddress)
+
+		if($askedUserAddress == $askingUserAddress){
 			return true;
-		
+		}
+
 		$askedUser = LibUser::fetchByUserAddress($askedUserAddress);
 		$share = LibShare::fetchByLocalUserIdAndRemoteUserAddress($askedUser['id'], $askingUserAddress);
-		if(is_array($share) && isset($share['sharing']) && $share['sharing'] == 1)
+
+		if(is_array($share) && isset($share['sharing']) && $share['sharing'] == 1){
 			return true;
+		}
+
 		return false;
 	}
-	
+
 	static function downloadContent($url){
 		if(ini_get('allow_url_fopen')){
 			return file_get_contents($url);
-		}
-		else{
+		} else {
 			require_once('lib/thirdparty/HttpClient.class.php');
 
 			return HttpClient::quickGet($url);

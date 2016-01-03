@@ -38,10 +38,10 @@ if(isset($_GET['action']) && $_GET['action'] == 'deleteShare' && isset($_GET['sh
 	$_SESSION['selectedUserAddresses'] = array($sessionUser->getUserAddress()); //reset selected user addresses
 }
 
-if(isset($_REQUEST['action']) && 
-		$_REQUEST['action'] == 'saveShare' && 
+if(isset($_REQUEST['action']) &&
+		$_REQUEST['action'] == 'saveShare' &&
 		isset($_REQUEST['remoteUserAddress']) &&
-		LibUser::isValidUserAddress(LibUser::buildCanonicalUserAddress(trim($_REQUEST['remoteUserAddress']))) && 
+		LibUser::isValidUserAddress(LibUser::buildCanonicalUserAddress(trim($_REQUEST['remoteUserAddress']))) &&
 		LibUser::buildCanonicalUserAddress(trim($_REQUEST['remoteUserAddress'])) != $sessionUser->getUserAddress()){
 
 	$sharing = isset($_REQUEST['sharing']) && $_REQUEST['sharing'] ? 1 : 0;
@@ -62,7 +62,7 @@ if(isset($_REQUEST['action']) &&
 */
 echo LibString::getNotificationBoxText();
 echo LibString::getErrorBoxText();
-	
+
 /*
 * shares
 */
@@ -83,12 +83,18 @@ foreach($shares as $share){
 	echo '<input type="hidden" name="action" value="saveShare" />';
 	echo '<td><input type="hidden" name="remoteUserAddress" value="' .LibString::protectXSS($share['remote_user_address']). '" />'. LibString::protectXSS($share['remote_user_address']) .'</td>';
 	echo '<td style="text-align:center"><input type="checkbox" name="following"';
-	if($share['following'])
+
+	if($share['following']){
 		echo ' checked="checked" ';
+	}
+
 	echo '/></td>';
 	echo '<td style="text-align:center"><input type="checkbox" name="sharing"';
-	if($share['sharing'])
+
+	if($share['sharing']){
 		echo ' checked="checked" ';
+	}
+
 	echo '/></td>';
 	echo '<td><a href="index.php?pid=literaturedb_collaborate&amp;action=deleteShare&amp;shareId=' .LibString::protectXSS($share['id']). '" onclick="return confirm(\'Are you sure you want to delete this share?\')"><img src="img/icons/cross.png" alt="delete"/></a></td>';
 	echo '<td><input type="image" src="img/icons/disk.png" /></td>';
@@ -103,6 +109,7 @@ if(count($shares) > 0){
 
 $shares = LibRouter::share_fetchAllByLocalUserId($sessionUser->getId(), $sessionUser->getUserAddress());
 $smallOrgaInterface = true;
+
 if(count($shares) > 20){
 	$smallOrgaInterface = false;
 }
@@ -130,12 +137,12 @@ echo '<td>';
 echo '<input type="hidden" name="action" value="saveShare" />';
 echo '<input type="hidden" name="following" value="1" />';
 echo '<input type="hidden" name="sharing" value="1" />';
-	
+
 $value = '';
 if($smallOrgaInterface){
 	$value = 'username@someremotedomain.org';
 }
-	
+
 echo '<input type="text" id="users" name="remoteUserAddress" size="40" value="' .$value. '" /> ';
 echo '</td>';
 echo '<td style="text-align:center"><img src="img/icons/lightbulb.png" alt="?" title="External users can be added by typing in their user address. E.g. your user address is '. LibString::protectXSS($sessionUser->getUserAddress()) .'" style="margin:0;vertical-align:middle"/></td>';

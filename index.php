@@ -27,14 +27,16 @@ if($sessionUser->isLoggedIn()){
 		'literaturedb_login' => 'documents.php',
 		'literaturedb_collaborate' => 'collaborate.php',
 		'literaturedb_settings' => 'settings.php',
-		'literaturedb_documents' => 'documents.php',		
+		'literaturedb_documents' => 'documents.php',
 		'literaturedb_document' => 'document.php',
 		'literaturedb_person' => 'person.php');
-	if($sessionUser->isAdmin())
+
+	if($sessionUser->isAdmin()){
 		$pages = array_merge($pages, array('literaturedb_admin' => 'admin.php',));
+	}
+
 	$pidFile = "documents.php";
-}
-else{
+} else {
 	$pages = array(
 		'literaturedb_login' => 'login.php',
 		'literaturedb_register' => 'register.php');
@@ -42,8 +44,9 @@ else{
 	$pidFile = "login.php";
 }
 
-if($pid != '' && isset($pages[$pid]))
+if($pid != '' && isset($pages[$pid])){
 	$pidFile = $pages[$pid];
+}
 
 //check problems
 if($pidFile == ""){

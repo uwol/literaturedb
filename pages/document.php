@@ -47,13 +47,14 @@ $(function (){
 
 <?php
 $documentAddress = '';
-if(isset($_REQUEST['documentAddress']))
+if(isset($_REQUEST['documentAddress'])){
 	$documentAddress = LibDocument::buildCanonicalDocumentAddress($_REQUEST['documentAddress']);
+}
 
 $mode = '';
-if(isset($_REQUEST['mode']))
+if(isset($_REQUEST['mode'])){
 	$mode = $_REQUEST['mode'];
-
+}
 
 
 
@@ -64,11 +65,12 @@ if(isset($_REQUEST['mode']))
 // adding a document
 if(isset($_REQUEST['action']) && ($_REQUEST['action'] == 'document_create' || $_REQUEST['action'] == 'document_copy')){
 	$documentAddress = '';
-	if(isset($_GET['documentAddress']))
+	if(isset($_GET['documentAddress'])){
 		$documentAddress = trim($_GET['documentAddress']);
-		
+	}
+
 	// ---------------------------------------------------
-	
+
 	/*
 	* copy file contents and determine hash
 	*/
@@ -81,22 +83,23 @@ if(isset($_REQUEST['action']) && ($_REQUEST['action'] == 'document_create' || $_
 			$hash = $document['hash'];
 		}
 		// a document/file is copied from remote
-		else{
+		else {
 			$hash = sha1(LibRouter::document_fetchFileContents($documentAddress, $sessionUser->getUserAddress()));
+
 			if(!is_file(LibDocument::getFilePath($hash))){ //file does not exist yet?
 				$handle = fopen(LibDocument::getFilePath($hash), 'w+');
 				fwrite($handle, LibRouter::document_fetchFileContents($documentAddress, $sessionUser->getUserAddress()));
 				fclose($handle);
 			}
 		}
-	} 
+	}
 	// a file could have been uploaded
 	else {
 		$hash = storeAndHashUploadedFile();
 	}
 
 	// ---------------------------------------------------
-	
+
 	/*
 	* try to identify the document in the user context by the hash -> check, whether the user already owns the file
 	*/
@@ -121,45 +124,51 @@ if(isset($_REQUEST['action']) && ($_REQUEST['action'] == 'document_create' || $_
 
 		// derive document data from the hash
 		$document['hash'] = $hash;
-		
+
 		// derive document data from the uploaded file
-		$pathinfo = getPathinfoOfUploadedFile();				
+		$pathinfo = getPathinfoOfUploadedFile();
 		$document['title'] = is_array($pathinfo) && isset($pathinfo['filename']) ? $pathinfo['filename'] : '';
 		$document['filename'] = is_array($pathinfo) && isset($pathinfo['filename']) ? $pathinfo['filename'] : '';
-		$document['extension'] = is_array($pathinfo) && isset($pathinfo['extension']) ? $pathinfo['extension'] : '';	
+		$document['extension'] = is_array($pathinfo) && isset($pathinfo['extension']) ? $pathinfo['extension'] : '';
 	}
-	
+
 	// ---------------------------------------------------
 
 	/*
 	* set up user ids of document elements
 	*/
 	$document['user_id'] = $sessionUser->id;
-	
+
 	if(isset($document['tags']) && is_array($document['tags'])){
 		$newTags = array();
+
 		foreach($document['tags'] as $tag){
 			$tag['user_id'] = $sessionUser->id;
 			$newTags[] = $tag;
 		}
+
 		$document['tags'] = $newTags;
 	}
 
 	if(isset($document['authors']) && is_array($document['authors'])){
 		$newAuthors = array();
+
 		foreach($document['authors'] as $author){
 			$author['user_id'] = $sessionUser->id;
 			$newAuthors[] = $author;
 		}
+
 		$document['authors'] = $newAuthors;
 	}
 
 	if(isset($document['editors']) && is_array($document['editors'])){
 		$newEditors = array();
+
 		foreach($document['editors'] as $editor){
 			$editor['user_id'] = $sessionUser->id;
 			$newEditors[] = $editor;
 		}
+
 		$document['editors'] = $newEditors;
 	}
 
@@ -171,7 +180,7 @@ if(isset($_REQUEST['action']) && ($_REQUEST['action'] == 'document_create' || $_
 	// save file info
 	$documentByAddress = LibRouter::document_fetch($documentAddress, $sessionUser->getUserAddress());
 	LibDocument::saveFileInfo($documentByAddress['id'], $document['hash'], $document['filename'], $document['extension']);
-	
+
 	$mode = 'edit';
 }
 
@@ -184,7 +193,7 @@ if(isset($_POST['action']) && $_POST['action'] == "document_save"){
 	$document['title'] = $_POST['title'];
 	$document['date'] = $_POST['date'];
 	$document['abstract'] = $_POST['abstract'];
-	
+
 	$document['address'] = $_POST['address'];
 	$document['booktitle'] = $_POST['booktitle'];
 	$document['chapter'] = $_POST['chapter'];
@@ -217,7 +226,7 @@ if(isset($_POST['action']) && $_POST['action'] == "document_save"){
 	$documentByAddress = LibRouter::document_fetch($documentAddress, $sessionUser->getUserAddress());
 
 	LibGlobal::$notificationTexts[] = 'The document has been saved.';
-	
+
 	// if no file has been appended to this document, yet
 	if($documentByAddress['hash'] == ''){
 		$hash = storeAndHashUploadedFile();
@@ -230,19 +239,17 @@ if(isset($_POST['action']) && $_POST['action'] == "document_save"){
 			// no document data found by hash? -> user does not own this document, yet
 			if(!is_array($documentByHash) || !isset($documentByHash['id']) || $documentByHash['id'] == ''){
 				// derive document data from the uploaded file
-				$pathinfo = getPathinfoOfUploadedFile();		
-				if(is_array($pathinfo)){			
+				$pathinfo = getPathinfoOfUploadedFile();
+				if(is_array($pathinfo)){
 					$filename = isset($pathinfo['filename']) ? $pathinfo['filename'] : '';
 					$extension = isset($pathinfo['extension']) ? $pathinfo['extension'] : '';
-				
+
 					// save file info
 					LibDocument::saveFileInfo($document['id'], $hash, $filename, $extension);
-				}
-				else{
+				} else {
 					LibGlobal::$errorTexts[] = 'Could not determine file information of uploaded file.';
 				}
-			}
-			else{
+			} else {
 				LibGlobal::$errorTexts[] = 'The file is already appended to document ' .$documentByHash['title']. '.';
 			}
 		}
@@ -262,14 +269,15 @@ echo LibString::getErrorBoxText();
 
 if(LibDocument::isValidDocumentAddress($documentAddress)){
 	$document = LibRouter::document_fetch($documentAddress, $sessionUser->getUserAddress());
-	
+
 	if(is_array($document)){//could the document be loaded?
 		$ownDocument = false;
 		if(LibDocument::isLocalDocumentAddress($documentAddress) && $document['user_id'] == $sessionUser->id)
 			$ownDocument = true;
 
-		if(!$ownDocument)
+		if(!$ownDocument){
 			echo '<div class="alien">';
+		}
 
 		//-------------------------------------------------------------------------
 		/*
@@ -287,30 +295,40 @@ if(LibDocument::isValidDocumentAddress($documentAddress)){
 				echo '<a href="api.php?action=export_ris&amp;auth=session&amp;id=' .LibString::protectXSS($document['id']). '">RIS</a>';
 				echo '</p>';
 			}
-		
+
 			echo '<h1>Show document</h1>';
-		
+
 			echo '<p>';
 			echo '<a href="javascript:history.back()"><img src="img/icons/arrow_left.png" alt="back"/></a> ';
-			if($ownDocument)
+
+			if($ownDocument){
 				echo '<a href="index.php?pid=literaturedb_document&amp;mode=edit&amp;documentAddress=' .LibString::protectXSS($documentAddress). '"><img src="img/icons/page_white_edit.png" alt="edit"/></a> ';
-			else
+			} else {
 				echo '<a href="index.php?pid=literaturedb_document&amp;action=document_copy&amp;documentAddress=' .LibString::protectXSS($documentAddress). '"><img src="img/icons/page_copy.png" alt="copy"/></a> ';
-			
-			if($ownDocument)
+			}
+
+			if($ownDocument){
 				echo '<a href="index.php?pid=literaturedb_documents&amp;mode=delete&amp;documentId=' .LibString::protectXSS($document['id']). '" onclick="return confirm(\'Are you sure you want to delete this document?\')"><img src="img/icons/cross.png" alt="delete"/></a> ';
+			}
+
 			echo '</p>';
 
 			echo '<h2>Document information</h2>';
-			
+
 			echo '<table style="width:100%">';
 			echo '<tr><td style="width:18%">Entry type:</td><td>' .LibString::protectXSS($document['entrytype_name']). '</td></tr>';
 			echo '<tr><td>Title:</td><td>' .LibString::protectXSS($document['title']). '</td></tr>';
-			if($document['date'] > 0)
+
+			if($document['date'] > 0){
 				echo '<tr><td>Date:</td><td>' .LibString::protectXSS($document['date']). '</td></tr>';
+			}
+
 			echo '<tr><td>Authors:</td><td>'. LibDocument::buildAuthorsString($document).'</td></tr>';
-			if($document['abstract'])
+
+			if($document['abstract']){
 				echo '<tr><td>Abstract:</td><td>' .nl2br(LibString::protectXSS($document['abstract'])). '</td></tr>';
+			}
+
 			echo '<tr><td>Tags:</td><td>' .LibDocument::buildTagsString($document). '</td></tr>';
 			echo '<tr><td>Created:</td><td>' .LibString::protectXSS($document['datetime_created']). '</td></tr>';
 
@@ -319,56 +337,94 @@ if(LibDocument::isValidDocumentAddress($documentAddress)){
 			*/
 			echo '<tr><td colspan="2"><hr /></td></tr>';
 
-			if($document['address'])
+			if($document['address']){
 				echo '<tr><td>Address:</td><td>' .LibString::protectXSS($document['address']). '</td></tr>';
-			if($document['booktitle'])
+			}
+
+			if($document['booktitle']){
 				echo '<tr><td>Booktitle:</td><td>' .LibString::protectXSS($document['booktitle']). '</td></tr>';
-			if($document['chapter'])
+			}
+
+			if($document['chapter']){
 				echo '<tr><td>Chapter:</td><td>' .LibString::protectXSS($document['chapter']). '</td></tr>';
-			if($document['doi'])
-				echo '<tr><td>DOI:</td><td>' .LibString::protectXSS($document['doi']). '</td></tr>';			
-			if($document['ean'])
-				echo '<tr><td>EAN:</td><td>' .LibString::protectXSS($document['ean']). '</td></tr>';		
-			if($document['edition'])
+			}
+
+			if($document['doi']){
+				echo '<tr><td>DOI:</td><td>' .LibString::protectXSS($document['doi']). '</td></tr>';
+			}
+
+			if($document['ean']){
+				echo '<tr><td>EAN:</td><td>' .LibString::protectXSS($document['ean']). '</td></tr>';
+			}
+
+			if($document['edition']){
 				echo '<tr><td>Edition:</td><td>' .LibString::protectXSS($document['edition']). '</td></tr>';
-			if(is_array($document['editors']) && count($document['editors']) > 0)
+			}
+
+			if(is_array($document['editors']) && count($document['editors']) > 0){
 				echo '<tr><td>Editors:</td><td>'. LibDocument::buildEditorsString($document). '</td></tr>';
-			if($document['institution'])
+			}
+
+			if($document['institution']){
 				echo '<tr><td>Institution:</td><td>' .LibString::protectXSS($document['institution']). '</td></tr>';
-			if($document['journal_name'])
+			}
+
+			if($document['journal_name']){
 				echo '<tr><td>Journal:</td><td>' .LibString::protectXSS($document['journal_name']). '</td></tr>';
-			if($document['number'])
+			}
+
+			if($document['number']){
 				echo '<tr><td>Number / Issue:</td><td>' .LibString::protectXSS($document['number']). '</td></tr>';
-			if($document['organization'])
+			}
+
+			if($document['organization']){
 				echo '<tr><td>Organization:</td><td>' .LibString::protectXSS($document['organization']). '</td></tr>';
-			if($document['pages'])
-				echo '<tr><td>Pages:</td><td>' .LibString::protectXSS($document['pages']). '</td></tr>';			
-			if($document['publisher_name'])
+			}
+
+			if($document['pages']){
+				echo '<tr><td>Pages:</td><td>' .LibString::protectXSS($document['pages']). '</td></tr>';
+			}
+
+			if($document['publisher_name']){
 				echo '<tr><td>Publisher:</td><td>' .LibString::protectXSS($document['publisher_name']). '</td></tr>';
-			if($document['school'])
+			}
+
+			if($document['school']){
 				echo '<tr><td>School:</td><td>' .LibString::protectXSS($document['school']). '</td></tr>';
-			if($document['series'])
+			}
+
+			if($document['series']){
 				echo '<tr><td>Series:</td><td>' .LibString::protectXSS($document['series']). '</td></tr>';
-			if($document['url'])
+			}
+
+			if($document['url']){
 				echo '<tr><td>Url:</td><td><a href="' .LibString::protectXSS($document['url']). '">' .LibString::protectXSS($document['url']). '</a></td></tr>';
-			if($document['volume'])
+			}
+
+			if($document['volume']){
 				echo '<tr><td>Volume:</td><td>' .LibString::protectXSS($document['volume']). '</td></tr>';
-			if($document['note'])
+			}
+
+			if($document['note']){
 				echo '<tr><td>Note:</td><td>' .nl2br(LibString::protectXSS($document['note'])). '</td></tr>';
+			}
+
 			if($document['rating'] > 0){
 				echo '<tr><td>Rating:</td><td>';
+
 				for($i=0;$i<5;$i++){
 					if($i < $document['rating']){
 						echo '<img src="img/icons/star.png" alt="*" style="width:18px" />';
-					}
-					else{
+					} else {
 						echo '<img src="img/icons/star_empty.png" style="width:18px" alt="*" />';
 					}
 				}
+
 				echo '</td></tr>';
 			}
+
 			echo '</table>';
-			
+
 			/*
 			* references
 			*/
@@ -377,8 +433,8 @@ if(LibDocument::isValidDocumentAddress($documentAddress)){
 			echo '<tr><td>Bibtex:</td><td>'.LibString::protectXSS(LibDocument::getId_Bibtex($document)).'</td></tr>';
 			echo '<tr><td>MODS XML:</td><td>'.LibString::protectXSS(LibDocument::getId_ModsXml($document['id'])).'</td></tr>';
 			echo '<tr><td style="width:18%">Word:</td><td>'.LibString::protectXSS(LibDocument::getId_Word2007($document['id'])).'</td></tr>';
-			echo '</table>';			
-		
+			echo '</table>';
+
 			// if the document has a hash, i. e. has a file
 			if($document['hash'] != ''){
 				/*
@@ -388,9 +444,9 @@ if(LibDocument::isValidDocumentAddress($documentAddress)){
 				echo '<table style="width:100%">';
 				echo '<tr><td style="width:18%">Filename:</td><td>' .
 				LibString::protectXSS(substr(LibString::truncate($document['filename'], 50, ''), 0, 50)). '.' .LibString::protectXSS($document['extension']). '</td></tr>';
-			
+
 				$filesize = $document['filesize'] == '' ? '' : round($document['filesize'] / 1000, 0) . ' KB';
-			
+
 				echo '<tr><td>Size:</td><td>' .$filesize. '</td></tr>';
 				echo '<tr><td>Hash:</td><td>' .LibString::protectXSS($document['hash']). '</td></tr>';
 				echo '<tr><td colspan="2"><a href="download.php?documentAddress=' .LibString::protectXSS(LibDocument::buildMinimalDocumentAddress($document['document_address'])). '&amp;mode=literaturedb_document">Download document</a></td></tr>';
@@ -401,53 +457,63 @@ if(LibDocument::isValidDocumentAddress($documentAddress)){
 		/*
 		* edit mode
 		*/
-		else{
+		else {
 			echo '<h1>Edit document</h1>';
 
 			echo '<form method="post" enctype="multipart/form-data" action="index.php?pid=literaturedb_document">';
 			echo '<fieldset>';
-			if($ownDocument)
+
+			if($ownDocument){
 				echo '<input type="submit" value="save" />';
-			else
+			} else {
 				echo '<input type="submit" value="copy" />';
+			}
+
 			echo '<br /><hr />';
-		
+
 
 			echo '<input type="hidden" name="action" value="document_save" />';
 			echo '<input type="hidden" name="id" value="' .LibString::protectXSS($document['id']). '" />';
 
 			echo '<input type="hidden" name="documentAddress" value="' .LibString::protectXSS($documentAddress). '" />';
-			
+
 			//Entry type
 			echo '<select name="entrytype_id">';
 
 			foreach(LibDocument::fetchAllEntryTypes() as $key => $value){
 				echo '<option ';
-				if($key == $document['entrytype_id'])
+
+				if($key == $document['entrytype_id']){
 					echo 'selected="selected" ';
-				echo 'value="' .$key. '">' .$value; 
-				echo '</option>';	
+				}
+
+				echo 'value="' .$key. '">' .$value;
+				echo '</option>';
 			}
+
 			echo '</select> Entry type<br />';
-			
+
 			echo '<hr />';
-			
+
 
 			echo '<input type="text" name="title" value="' .LibString::protectXSS($document['title']). '" size="60" /> Title<br />';
 
 			echo '<input type="text" name="date" value="' .LibString::protectXSS($document['date']). '" size="10" /> Date<br />';
-			
+
 			echo '<div>Authors <img src="img/icons/lightbulb.png" alt="?" title="E.g. &quot;Friedrich August von Hayek and Winston Leonard {Spencer Churchill}&quot;" style="margin:0;vertical-align:middle"/><br />';
 			echo '<input type="text" name="authors" id="authors" value="' .LibString::getPersonsNameString($document['authors']). '" size="75" /></div>';
-			
+
 			echo 'Abstract<br />';
 
-			echo '<textarea name="abstract" cols="60" rows="4">' . LibString::protectXSS($document['abstract']) . '</textarea><br />';		
+			echo '<textarea name="abstract" cols="60" rows="4">' . LibString::protectXSS($document['abstract']) . '</textarea><br />';
 			echo '<div>Tags <img src="img/icons/lightbulb.png" alt="?" title="E.g. &quot;city newyork webdesign&quot;" style="margin:0;vertical-align:middle"/>';
-			$tagNames = array();
-			foreach($document['tags'] as $tag) // !!!!
 
+			$tagNames = array();
+
+			foreach($document['tags'] as $tag){
 				$tagNames[] = LibString::protectXSS($tag['name']);
+			}
+
 			echo '<br /><input type="text" name="tags" id="tags" value="' .implode(' ', $tagNames). '" size="75" /></div>';
 
 
@@ -455,22 +521,22 @@ if(LibDocument::isValidDocumentAddress($documentAddress)){
 			* bibtex meta data
 			*/
 			echo '<hr />';
-			
+
 			echo '<input type="text" name="address" value="' .LibString::protectXSS($document['address']). '" size="40" /> Address<br />';
 			echo '<input type="text" id="booktitle" name="booktitle" value="' .LibString::protectXSS($document['booktitle']). '" size="40" /> Booktitle <img src="img/icons/lightbulb.png" alt="?" title="Used as the conference name in Word 2007 export." style="margin:0;vertical-align:middle"/><br />';
 			echo '<input type="text" name="chapter" value="' .LibString::protectXSS($document['chapter']). '" size="40" /> Chapter<br />';
 			echo '<input type="text" name="doi" value="' .LibString::protectXSS($document['doi']). '" size="40" /> DOI<br />';
-			echo '<input type="text" name="ean" value="' .LibString::protectXSS($document['ean']). '" size="40" /> Ean<br />';		
+			echo '<input type="text" name="ean" value="' .LibString::protectXSS($document['ean']). '" size="40" /> Ean<br />';
 			echo '<input type="text" name="edition" value="' .LibString::protectXSS($document['edition']). '" size="40" /> Edition<br />';
-			
+
 			echo '<div>Editors <img src="img/icons/lightbulb.png" alt="?" title="E.g. &quot;Friedrich August von Hayek and Winston Leonard {Spencer Churchill}&quot;" style="margin:0;vertical-align:middle"/><br />';
 			echo '<input type="text" name="editors" id="editors" value="' .LibString::protectXSS(LibString::getPersonsNameString($document['editors'])). '" size="50" /></div>';
-			
+
 			echo '<input type="text" name="institution" value="' .LibString::protectXSS($document['institution']). '" size="40" /> Institution<br />';
 			echo 'Journal <div><input type="text" name="journal_name" id="journal_name" value="' .LibString::protectXSS($document['journal_name']). '" size="50" /></div>';
 			echo '<input type="text" name="number" value="' .LibString::protectXSS($document['number']). '" size="40" /> Number / Issue<br />';
 			echo '<input type="text" name="organization" value="' .LibString::protectXSS($document['organization']). '" size="40" /> Organization<br />';
-			echo '<input type="text" name="pages" value="' .LibString::protectXSS($document['pages']). '" size="40" /> Pages<br />';	
+			echo '<input type="text" name="pages" value="' .LibString::protectXSS($document['pages']). '" size="40" /> Pages<br />';
 			echo 'Publisher <div><input type="text" name="publisher_name" id="publisher_name" value="' .LibString::protectXSS($document['publisher_name']). '" size="50" /></div>';
 			echo '<input type="text" name="school" value="' .LibString::protectXSS($document['school']). '" size="40" /> School<br />';
 			echo '<input type="text" name="series" value="' .LibString::protectXSS($document['series']). '" size="40" /> Series<br />';
@@ -486,28 +552,25 @@ if(LibDocument::isValidDocumentAddress($documentAddress)){
 				echo '<input name="file" type="file" size="30" /> Append a file (max. ' .calculateMaxFilesize(). ' MB)<br />';
 				echo '<hr />';
 			}
-			
+
 			if($ownDocument){
 				echo '<input type="submit" value="save" />';
-			}
-			else{
+			} else {
 				echo '<input type="submit" value="copy" />';
 			}
-		
+
 			echo '</fieldset>';
 
-			echo '</form>';		
+			echo '</form>';
 		}
 		//-------------------------------------------------------------------------
-		if(!$ownDocument)
+		if(!$ownDocument){
 			echo '</div>';
-	}
-	else
+		}
+	} else {
 		echo LibString::protectXSS($document);
-
-}
-
-else{
+	}
+} else {
 	echo '<h1>Add a document</h1>';
 
 	echo '<form method="post" enctype="multipart/form-data" action="index.php?pid=literaturedb_document">';
@@ -515,7 +578,7 @@ else{
 
 	echo '<p>Append a file (max. ' .calculateMaxFilesize(). ' MB): <input name="file" type="file" size="30" /></p>';
 	echo '<p><input type="submit" value="Add a document" /></p>';
-	
+
 	echo '<input type="hidden" name="action" value="document_create" />';
 
 	echo '</fieldset>';
@@ -537,7 +600,7 @@ function storeAndHashUploadedFile(){
 	// if a file has been uploaded
 	if(isset($_FILES['file']['tmp_name']) && $_FILES['file']['tmp_name'] != ''){
 		$hash = sha1_file($_FILES['file']['tmp_name']);
-	
+
 		if($hash == ''){
 			LibGlobal::$errorTexts[] = 'Could not calculate the hash of the uploaded file.';
 		}

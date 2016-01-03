@@ -17,17 +17,18 @@ along with literaturedb. If not, see <http://www.gnu.org/licenses/>.
 */
 
 class LibGlobal{
-	public static $version = "1.31";
+	public static $version = "1.40";
 	public static $selectedUserAddresses = array();
-	
+
 	public static $notificationTexts = array();
 	public static $errorTexts = array();
-	
+
 	public static function ldapIsEnabled(){
-		if(isset(LibConfig::$ldapEnabled) && LibConfig::$ldapEnabled > 0)
+		if(isset(LibConfig::$ldapEnabled) && LibConfig::$ldapEnabled > 0){
 			return true;
-		else
+		} else {
 			return false;
+		}
 	}
 }
 ?>
