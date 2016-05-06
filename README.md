@@ -12,39 +12,39 @@ For running your own installation of literaturedb you need a web hosting with th
 Features:
 * Simplicity: You will find all options on just four pages.
 
-![simplicity](http://img.literaturedb.com/simple.png)
+![simplicity](http://uwol.github.io/img/literaturedb/simple.png)
 
 * Bibtex: It uses Bibtex entry types so you can reuse references.
 
-![bibtex](http://img.literaturedb.com/bibtex.png)
+![bibtex](http://uwol.github.io/img/literaturedb/bibtex.png)
 
 * Full text: It stores full text files (pdf, doc, etc.) for quick access.
 
-![files](http://img.literaturedb.com/files.png)
+![files](http://uwol.github.io/img/literaturedb/files.png)
 
 * Exports: Export to Word, Bibtex, Endnote, MODS and RIS.
 
-![export](http://img.literaturedb.com/export.png)
+![export](http://uwol.github.io/img/literaturedb/export.png)
 
 * Collaborate: Share documents in your team and with friends.
 
-![collaborative](http://img.literaturedb.com/collaborative.png)
+![collaborative](http://uwol.github.io/img/literaturedb/collaborative.png)
 
 * Search function: Find documents with the search function.
 
-![search](http://img.literaturedb.com/search.png)
+![search](http://uwol.github.io/img/literaturedb/search.png)
 
 * Tagging: You can tag each document with keywords.
 
-![tagging](http://img.literaturedb.com/tagging.png)
+![tagging](http://uwol.github.io/img/literaturedb/tagging.png)
 
 * Small footprint: It is 580px wide so it fits besides a word processor.
 
-![smallfootprint](http://img.literaturedb.com/smallfootprint.png)
+![smallfootprint](http://uwol.github.io/img/literaturedb/smallfootprint.png)
 
 * Customize: Reuse the CSS design of your organization.
 
-![customize](http://img.literaturedb.com/customize.png)
+![customize](http://uwol.github.io/img/literaturedb/customize.png)
 
 * FLOSS: It is free and open source (GPL).
 * LDAP: Reuse the user management of your organization.
