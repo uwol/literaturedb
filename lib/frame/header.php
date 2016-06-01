@@ -10,9 +10,9 @@ echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.or
 	<meta name="keywords" content="literaturedb" />
 <?php
 if($sessionUser->isLoggedIn()){
-	echo '	<meta name="robots" content="noindex, nofollow, noarchive" />'."\r\n";
+	echo '	<meta name="robots" content="noindex, nofollow, noarchive" />'.PHP_EOL;
 } else {
-	echo '	<meta name="robots" content="index, noarchive" />'."\r\n";
+	echo '	<meta name="robots" content="index, noarchive" />'.PHP_EOL;
 }
 ?>
 	<link rel="stylesheet" type="text/css" href="custom/design/style.css" media="screen, print" />
