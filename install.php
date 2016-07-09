@@ -16,12 +16,11 @@ You should have received a copy of the GNU General Public License
 along with literaturedb. If not, see <http://www.gnu.org/licenses/>.
 */
 
-include "lib/masterinclude.php";
+require_once('custom/systemconfig.php');
+require_once('vendor/literaturedb/initialize.php');
 
-echo '<p>Connecting to the database server ...</p>';
-LibDb::connect();
 
-echo '<p>Now the database tables are created. Therefore the MySQL parameters have to be set correctly in custom/systemconfig.php</p>';
+echo '<p>In the following the database tables are created. Therefore the MySQL parameters have to be set correctly in custom/systemconfig.php</p>';
 
 echo 'Creating table: literaturedb_asso_document_author<br />';
 $cmd = "CREATE TABLE literaturedb_asso_document_author (
@@ -31,7 +30,7 @@ $cmd = "CREATE TABLE literaturedb_asso_document_author (
   PRIMARY KEY (document_id,person_id),
   KEY person_id (person_id)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
-LibDb::query($cmd);
+\literaturedb\LibDb::query($cmd);
 
 echo 'Creating table: literaturedb_asso_document_editor<br />';
 $cmd = "CREATE TABLE literaturedb_asso_document_editor (
@@ -41,7 +40,7 @@ $cmd = "CREATE TABLE literaturedb_asso_document_editor (
   PRIMARY KEY (document_id,person_id),
   KEY person_id (person_id)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
-LibDb::query($cmd);
+\literaturedb\LibDb::query($cmd);
 
 echo 'Creating table: literaturedb_asso_document_tag<br />';
 $cmd = "CREATE TABLE literaturedb_asso_document_tag (
@@ -50,7 +49,7 @@ $cmd = "CREATE TABLE literaturedb_asso_document_tag (
   PRIMARY KEY (document_id,tag_id),
   KEY tag_id (tag_id)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
-LibDb::query($cmd);
+\literaturedb\LibDb::query($cmd);
 
 echo 'Creating table: literaturedb_document<br />';
 $cmd = "CREATE TABLE literaturedb_document (
@@ -87,7 +86,7 @@ $cmd = "CREATE TABLE literaturedb_document (
   KEY user_id (user_id),
   KEY datetime_created (datetime_created)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
-LibDb::query($cmd);
+\literaturedb\LibDb::query($cmd);
 
 echo 'Creating table: literaturedb_journal<br />';
 $cmd = "CREATE TABLE literaturedb_journal (
@@ -98,7 +97,7 @@ $cmd = "CREATE TABLE literaturedb_journal (
   UNIQUE KEY name (name,user_id),
   KEY user_id (user_id)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
-LibDb::query($cmd);
+\literaturedb\LibDb::query($cmd);
 
 echo 'Creating table: literaturedb_person<br />';
 $cmd = "CREATE TABLE literaturedb_person (
@@ -112,7 +111,7 @@ $cmd = "CREATE TABLE literaturedb_person (
   UNIQUE KEY firstname (firstname(100),lastname(100),user_id),
   KEY user_id (user_id)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
-LibDb::query($cmd);
+\literaturedb\LibDb::query($cmd);
 
 echo 'Creating table: literaturedb_publisher<br />';
 $cmd = "CREATE TABLE literaturedb_publisher (
@@ -123,7 +122,7 @@ $cmd = "CREATE TABLE literaturedb_publisher (
   UNIQUE KEY name (name,user_id),
   KEY user_id (user_id)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
-LibDb::query($cmd);
+\literaturedb\LibDb::query($cmd);
 
 echo 'Creating table: literaturedb_sys_event<br />';
 $cmd = "CREATE TABLE literaturedb_sys_event (
@@ -135,7 +134,7 @@ $cmd = "CREATE TABLE literaturedb_sys_event (
   PRIMARY KEY (id),
   KEY user_id (user_id)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
-LibDb::query($cmd);
+\literaturedb\LibDb::query($cmd);
 
 echo 'Creating table: literaturedb_sys_share<br />';
 $cmd = "CREATE TABLE literaturedb_sys_share (
@@ -147,7 +146,7 @@ $cmd = "CREATE TABLE literaturedb_sys_share (
   PRIMARY KEY (id),
   UNIQUE KEY local_user_id (local_user_id,remote_user_address)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
-LibDb::query($cmd);
+\literaturedb\LibDb::query($cmd);
 
 echo 'Creating table: literaturedb_sys_user<br />';
 $cmd = "CREATE TABLE literaturedb_sys_user (
@@ -162,7 +161,7 @@ $cmd = "CREATE TABLE literaturedb_sys_user (
   UNIQUE KEY username (username),
   UNIQUE KEY email (emailaddress)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
-LibDb::query($cmd);
+\literaturedb\LibDb::query($cmd);
 
 echo 'Creating table: literaturedb_tag<br />';
 $cmd = "CREATE TABLE literaturedb_tag (
@@ -173,5 +172,5 @@ $cmd = "CREATE TABLE literaturedb_tag (
   UNIQUE KEY name (name,user_id),
   KEY user_id (user_id)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
-LibDb::query($cmd);
+\literaturedb\LibDb::query($cmd);
 ?>

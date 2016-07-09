@@ -16,8 +16,12 @@ You should have received a copy of the GNU General Public License
 along with literaturedb. If not, see <http://www.gnu.org/licenses/>.
 */
 
-include "lib/masterinclude.php";
-include "lib/initialize.php";
+require_once('custom/systemconfig.php');
+require_once('vendor/literaturedb/initialize.php');
+
+use \literaturedb\LibRouter;
+use \literaturedb\LibMime;
+
 
 if(!$sessionUser->isLoggedIn())
 	die();

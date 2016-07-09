@@ -16,7 +16,15 @@ You should have received a copy of the GNU General Public License
 along with literaturedb. If not, see <http://www.gnu.org/licenses/>.
 */
 
-include "lib/masterinclude.php";
+require_once('custom/systemconfig.php');
+require_once('vendor/literaturedb/initialize.php');
+
+use \literaturedb\LibExport;
+use \literaturedb\LibRest;
+use \literaturedb\LibRouter;
+use \literaturedb\LibUser;
+use \literaturedb\LibView;
+
 
 $request = LibRest::processRequest();
 $requestVars = $request->getVars();
@@ -26,10 +34,6 @@ $askingUserAddress = '';
 * Authentication
 */
 if(isset($requestVars['auth']) && $requestVars['auth'] == 'session'){ //is this a internal API call?
-	//initialize session, slow and generates session files in the file system
-	//should only be done for internal calls!
-	require 'lib/initialize.php';
-
 	if($sessionUser->isLoggedin()){
 		$askingUserAddress = $sessionUser->getUserAddress();
 	} else {
@@ -39,8 +43,6 @@ if(isset($requestVars['auth']) && $requestVars['auth'] == 'session'){ //is this 
 }
 //this is an external API call
 else {
-	LibDb::connect();
-
 	$authenticated = false;
 	$authUser = new LibUser();
 

@@ -16,10 +16,9 @@ You should have received a copy of the GNU General Public License
 along with literaturedb. If not, see <http://www.gnu.org/licenses/>.
 */
 
-include "lib/masterinclude.php";
-include "lib/initialize.php";
+require_once('custom/systemconfig.php');
+require_once('vendor/literaturedb/initialize.php');
 
-ini_set('arg_separator.output', '&amp;');
 
 //select page
 if($sessionUser->isLoggedIn()){
@@ -56,7 +55,7 @@ if($pidFile == ""){
 	exit();
 }
 
-require("lib/frame/header.php");
-require("pages/" .$pidFile);
-require("lib/frame/footer.php");
+require('vendor/literaturedb/frame/header.php');
+require('vendor/literaturedb/pages/' .$pidFile);
+require('vendor/literaturedb/frame/footer.php');
 ?>
