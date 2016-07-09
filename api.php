@@ -19,11 +19,22 @@ along with literaturedb. If not, see <http://www.gnu.org/licenses/>.
 require_once('custom/systemconfig.php');
 require_once('vendor/literaturedb/initialize.php');
 
-use \literaturedb\LibExport;
-use \literaturedb\LibRest;
-use \literaturedb\LibRouter;
-use \literaturedb\LibUser;
-use \literaturedb\LibView;
+use literaturedb\LibCronjobs;
+use literaturedb\LibDb;
+use literaturedb\LibDocument;
+use literaturedb\LibExport;
+use literaturedb\LibGlobal;
+use literaturedb\LibJournal;
+use literaturedb\LibMime;
+use literaturedb\LibPerson;
+use literaturedb\LibPublisher;
+use literaturedb\LibRest;
+use literaturedb\LibRouter;
+use literaturedb\LibShare;
+use literaturedb\LibString;
+use literaturedb\LibTag;
+use literaturedb\LibUser;
+use literaturedb\LibView;
 
 
 $request = LibRest::processRequest();
