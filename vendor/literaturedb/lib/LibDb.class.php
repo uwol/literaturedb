@@ -19,6 +19,7 @@ along with literaturedb. If not, see <http://www.gnu.org/licenses/>.
 namespace literaturedb;
 
 use PDO;
+use PDOException;
 use LibConfig;
 
 class LibDb{

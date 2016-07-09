@@ -738,9 +738,7 @@ class LibRouter{
 		if(ini_get('allow_url_fopen')){
 			return file_get_contents($url);
 		} else {
-			require_once('lib/thirdparty/HttpClient.class.php');
-
-			return HttpClient::quickGet($url);
+			return \httpclient\HttpClient::quickGet($url);
 		}
 	}
 }
