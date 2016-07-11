@@ -1,0 +1,16 @@
+{
+    "name": "literaturedb/literaturedb",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Ulrich Wolffgang",
+            "email": "u.wol@wwu.de",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.0",
+        "phpmailer/phpmailer": "~5.2"
+    },
+    "license": "GPL-3.0+"
+}

@@ -5,7 +5,7 @@ literaturedb is a bibliographic management software that helps you organize your
 
 For running your own installation of literaturedb you need a web hosting with the following specifications:
 
-* PHP 5.3 or newer
+* PHP 5.5 or newer
 * MySQL 4.1 or newer
 * UTF8 has to be enabled in PHP and MySQL for special characters
 
