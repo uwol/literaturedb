@@ -55,7 +55,7 @@ if($pidFile == ""){
 	exit();
 }
 
-require('vendor/literaturedb/frame/header.php');
+require('vendor/literaturedb/layout/header.php');
 require('vendor/literaturedb/pages/' .$pidFile);
-require('vendor/literaturedb/frame/footer.php');
+require('vendor/literaturedb/layout/footer.php');
 ?>

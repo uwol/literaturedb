@@ -21,7 +21,7 @@ namespace literaturedb;
 use LibConfig;
 
 class LibGlobal{
-	public static $version = "2.00";
+	public static $version = "2.01";
 	public static $selectedUserAddresses = array();
 
 	public static $notificationTexts = array();
