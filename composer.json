@@ -9,6 +9,7 @@
         }
     ],
     "require": {
+    	"font-awesome": "^4.6.3",
         "php": ">=5.5.0",
         "phpmailer/phpmailer": "~5.2"
     },
