@@ -131,7 +131,7 @@ if(LibGlobal::ldapIsEnabled()){
 else
 	echo '			<p><i class="fa fa-plus-circle fa-fw" aria-hidden="true"></i> <a href="index.php?pid=literaturedb_register">Register a new user account</a></p>';
 ?>
-			<p style="margin-bottom:0"><i class="fa fa-heart-o fa-fw" aria-hidden="true"></i> <a href="http://www.literaturedb.de">Show me the features</a></p>
+			<p style="margin-bottom:0"><i class="fa fa-heart-o fa-fw" aria-hidden="true"></i> <a href="https://github.com/uwol/literaturedb">Show me the features</a></p>
 
 		</fieldset>
 	</form>

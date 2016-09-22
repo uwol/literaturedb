@@ -1,6 +1,6 @@
 <?php
 $footer = array();
-$footer[] = '<a href="http://www.literaturedb.de">literaturedb</a>';
+$footer[] = '<a href="https://github.com/uwol/literaturedb">literaturedb</a>';
 
 if(trim(LibConfig::$footer) != ''){
 	$footer[] = LibConfig::$footer;
