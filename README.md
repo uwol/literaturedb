@@ -1,6 +1,8 @@
 literaturedb - the collaborative bibliography tool
 ==================================================
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
+
 literaturedb is a bibliographic management software that helps you organize your literature and bibliographic references for scientific documents. It runs as a PHP web site and provides a collaborative space for storing and sharing documents and references.
 
 
